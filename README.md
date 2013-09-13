@@ -32,3 +32,47 @@ Currently the Shinobi file uses specific case-sensitive variable names to contro
 - `DEFINES`: The preprocessor directives to be defined by the compiler. It is the equivalent to `#define STUFF`. Following that example, the resulting define would be `-DSTUFF`. The default value is `-DNDEBUG`.
 
 Along with those variables, `;` and `#` in the beginning of a line denotes a comment. Anything after that comment is ignored until the next non-commented line.
+
+## Example files
+
+### Shinobi
+
+    PROJECT_NAME := shinobi
+    CXX := g++
+    CXXFLAGS += -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2
+    INCLUDE_FLAGS += -I.
+    LIBRARY_PATHS +=
+    LIBRARY_FLAGS += -lboost_system -lboost_filesystem
+    DEFINES += -DNDEBUG
+
+
+### build.ninja
+
+    cxx = g++
+
+    cxxflags = -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2
+
+    incflags = -I.
+
+    libpath = 
+
+    lib = -lboost_system -lboost_filesystem
+
+    def = -DNDEBUG
+
+    rule bd
+        command = ${cxx} ${cxxflags} ${def} -c ${in} -o ${out} ${incflags}
+
+    rule ld
+        command = ${cxx} ${in} -o ${out} ${libpath} ${lib}
+
+    build obj\shinobi.o: bd shinobi.cpp
+
+    build bin\shinobi: ld obj\shinobi.o
+
+
+These are actually the files used to build `shinobi` itself. It assumes Boost libraries are in the system directories.
+
+# Compiling shinobi
+
+`shinobi` requires any recent compiler using C++11 and variadic arguments. Boost.Filesystem is also required for the cross-platform file handling. 

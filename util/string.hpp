@@ -26,7 +26,7 @@ std::string stringify_list(const Cont& list) {
     return out.str();
 }
 
-bool extension_is(const std::string& str) {
+bool extension_is(const std::string&) {
     return false;
 }
 

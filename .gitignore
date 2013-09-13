@@ -6,9 +6,10 @@
 
 Shinobi
 
-# build.ninja file
+# ninja related files
 
-build.ninja
+*.ninja
+.ninja*
 
 # bin and obj directories
 
