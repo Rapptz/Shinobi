@@ -4,6 +4,8 @@
 
 Currently only `clang++` and `g++` are supported. Of course, `gcc` and `clang` are as well since they follow similar syntax. Technically anything with similar syntax to `g++` should run, despite the variable names. There might be more customisation and support for MSVC in the future, however this isn't currently planned.
 
+[1]: http://martine.github.io/ninja/
+
 # Shinobi File
 
 In order to run `shinobi`, you need a Shinobi file without any extension (note the uppercase S). This file has specific variable names and parsing rules that allow the creation of the build.ninja file. By default, invoking `shinobi` without an existing Shinobi file will lead to a default one being created with the following material:
