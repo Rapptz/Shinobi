@@ -35,6 +35,23 @@ Currently the Shinobi file uses specific case-sensitive variable names to contro
 
 Along with those variables, `;` and `#` in the beginning of a line denotes a comment. Anything after that comment is ignored until the next non-commented line.
 
+### Platform Dependent Assignment
+
+Sometimes, we want to have certain compile-flags be platform dependent or even something else entirely. Shinobi supports this by the use of an if statement. For example, suppose we wanted to add NOMINMAX if Windows is the current platform. We could express this as follows:
+
+    # Set up defines for all operating systems
+    DEFINES := -DNDEBUG
+
+    # Other info...
+
+    # Windows specific code
+    if Windows
+    DEFINES += -DNOMINMAX
+    endif
+
+
+The syntax is pretty straight forward. You start an if block with the `if` statement followed by a space and then the operating system you're targetting, then the variables that need modifying on a newline and finish it up with the `endif` statement. Current supported strings are `Windows`, `Linux`, and `MacOS`. If neither of those are found then the platform is called `Other`. These are all case sensitive. 
+
 ## Example files
 
 ### Shinobi
