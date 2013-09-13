@@ -1,0 +1,7 @@
+# Sublime-text stuff
+
+*.sublime*
+
+# Shinobi file itself
+
+Shinobi
