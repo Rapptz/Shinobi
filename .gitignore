@@ -5,3 +5,12 @@
 # Shinobi file itself
 
 Shinobi
+
+# build.ninja file
+
+build.ninja
+
+# bin and obj directories
+
+bin/*
+obj/*

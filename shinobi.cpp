@@ -9,26 +9,14 @@ namespace fs = boost::filesystem;
 
 void make_default_shinobi() {
     std::ofstream out("Shinobi");
-    out << "# Project name is given by the PROJECT_NAME variable.\n"
-           "# Compiler name is given by the CXX variable.\n"
-           "# Compiler flags are given by the CXXFLAGS variable.\n"
-           "# Include flags are given by the INCLUDE_FLAGS variable. These are prefixed by -I\n"
-           "# Library paths are given by the LIBRARY_PATHS variable. These are preixed by -L\n"
-           "# Library flags are given by the LIBRARY_FLAGS variable. These are prefixed by -l\n"
-           "# Preprocessor defines are given by the DEFINES variable. These are prefixed by -D\n"
-           "# These are all the variables Shinobi recognises. You can assign with :=\n"
-           "# and concatenate or append with +=. Comments are done by # and ; characters\n"
-           "# they are only ignored if they appear in the beginning.\n"
-           "# Variables containing lists, like CXXFLAGS, require a space to be the delimiter.\n"
-           "# Currently only g++ and clang++ compilers are supported.\n"
-           "# Along with .cpp, .cc, .cxx and .c++ files (case sensitive).\n\n\n"
-           "PROJECT_NAME += untitled\n"
-           "CXX += g++\n"
-           "CXXFLAGS += -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O3 -static-libstdc++\n"
-           "INCLUDE_FLAGS := -I.\n"
-           "LIBRARY_PATHS :=\n"
-           "LIBRARY_FLAGS :=\n"
-           "DEFINES := -DNDEBUG";
+    out << "# The default Shinobi file. See README.md for syntax help.\n\n"
+           "PROJECT_NAME := untitled\n"
+           "CXX := g++\n"
+           "CXXFLAGS += -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2\n"
+           "INCLUDE_FLAGS += -I.\n"
+           "LIBRARY_PATHS +=\n"
+           "LIBRARY_FLAGS +=\n"
+           "DEFINES += -DNDEBUG";
 }
 
 std::string remove_symlink(const fs::path& p) noexcept {
