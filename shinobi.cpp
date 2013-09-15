@@ -66,7 +66,7 @@ int main() {
     maker.rule("compile", "deps = gcc", 
                      "depfile = $out.d", 
                      "command = $cxx -MMD -MF $out.d $cxxflags $def -c $in -o $out $incflags",
-                     "description = Building $out");
+                     "description = Building $in to $out");
     maker.rule("link", "command = $cxx $in -o $out $libpath $lib", "description = Linking $out");
 
     std::vector<fs::path> input;
