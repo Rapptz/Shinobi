@@ -11,9 +11,8 @@ void make_default_shinobi() {
     std::ofstream out("Shinobi");
     out << "# The default Shinobi file. See README.md for syntax help.\n\n"
            "PROJECT_NAME := untitled\n"
-           "BUILDDIR := bin/\n"
-           "OBJDIR := obj/\n"
-           "SRCDIR := ./\n"
+           "BUILDDIR := bin\n"
+           "OBJDIR := obj\n"
            "CXX := g++\n"
            "CXXFLAGS += -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2\n"
            "INCLUDE_FLAGS += -I.\n"
@@ -53,9 +52,8 @@ int main() {
     util::ninja maker(out);
 
     maker.variable("ninja_required_version", "1.3");
-    maker.variable("builddir", shinobi.get("BUILDDIR", "bin/"));
-    maker.variable("objdir", shinobi.get("OBJDIR", "obj/"));
-    maker.variable("srcdir", shinobi.get("SRCDIR", "./"));
+    maker.variable("builddir", shinobi.get("BUILDDIR", "bin"));
+    maker.variable("objdir", shinobi.get("OBJDIR", "obj"));
     maker.variable("cxx", shinobi.get("CXX", "g++"));
     maker.variable("cxxflags", shinobi.get("CXXFLAGS", "-std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2"));
     maker.variable("incflags", shinobi.get("INCLUDE_FLAGS", "-I."));
@@ -74,15 +72,15 @@ int main() {
     std::vector<fs::path> input;
     std::vector<std::string> output;
 
-    for(fs::recursive_directory_iterator it(shinobi.get("SRCDIR", "./")), end; it != end; ++it) {
+    for(fs::recursive_directory_iterator it(shinobi.get("SRCDIR", ".")), end; it != end; ++it) {
         auto p = it->path();
         if(util::extension_is(p.string(), ".cpp", ".cxx", ".cc", ".c", ".c++")) {
             input.push_back(p);
         }
     }
 
-    fs::path bin(shinobi.get("BUILDDIR", "bin/"));
-    fs::path obj(shinobi.get("OBJDIR", "obj/"));
+    fs::path bin(shinobi.get("BUILDDIR", "bin"));
+    fs::path obj(shinobi.get("OBJDIR", "obj"));
 
     if(!fs::is_directory(bin)) {
         fs::create_directory(bin);
@@ -95,18 +93,18 @@ int main() {
     // Generate build sequences
 
     for(auto&& p : input) {
-        auto file_dir = obj / p;
-        auto appended_dir = (dir / file_dir).parent_path();
+        auto copy = p;
+        auto appended_dir = (dir / obj / p).parent_path();
         if(!fs::is_directory(appended_dir)) {
             fs::create_directories(appended_dir);
         }
 
-        std::string output_file = remove_symlink(file_dir.replace_extension(".o"));
+        std::string output_file = "$objdir/" + remove_symlink(copy.replace_extension(".o"));
         output.push_back(output_file);
         maker.build(remove_symlink(p), output_file, "compile");
     }
     
     // Generate link sequence
 
-    maker.build(util::stringify_list(output), (bin / shinobi.get("PROJECT_NAME", "untitled")).string(), "link");
+    maker.build(util::stringify_list(output), "$builddir/" + shinobi.get("PROJECT_NAME", "untitled"), "link");
 }
