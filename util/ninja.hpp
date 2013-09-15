@@ -10,7 +10,12 @@ struct basic_ninja {
     std::basic_ostream<CharT>& out;
     basic_ninja(std::basic_ostream<CharT>& o): out(o) {};
     basic_ninja& variable(const std::string& name, const std::string& content) {
-        out << name << " = " << content << "\n\n";
+        out << name << " = " << content << '\n';
+        return *this;
+    }
+
+    basic_ninja& newline() {
+        out << '\n';
         return *this;
     }
 
