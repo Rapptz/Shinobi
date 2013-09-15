@@ -49,6 +49,7 @@ int main() {
     std::ofstream out("build.ninja");
     util::ninja maker(out);
 
+    maker.variable("ninja_required_version", "1.3");
     maker.variable("cxx", shinobi.get("CXX", "g++"));
     maker.variable("cxxflags", shinobi.get("CXXFLAGS", "-std=c++11 -pedantic -Wall -O3 -static-libstdc++"));
     maker.variable("incflags", shinobi.get("INCLUDE_FLAGS", "-I."));
@@ -56,8 +57,11 @@ int main() {
     maker.variable("lib", shinobi.get("LIBRARY_FLAGS", ""));
     maker.variable("def", shinobi.get("DEFINES", "-DNDEBUG"));
 
-    maker.rule("bd", "deps = gcc", "depfile = $out.d", "command = $cxx -MMD -MF $out.d $cxxflags $def -c $in -o $out $incflags");
-    maker.rule("ld", "command = $cxx $in -o $out $libpath $lib");
+    maker.rule("compile", "deps = gcc", 
+                     "depfile = $out.d", 
+                     "command = $cxx -MMD -MF $out.d $cxxflags $def -c $in -o $out $incflags",
+                     "description = Building $out");
+    maker.rule("link", "command = $cxx $in -o $out $libpath $lib", "description = Linking $out");
 
     std::vector<fs::path> input;
     std::vector<std::string> output;
@@ -86,10 +90,10 @@ int main() {
 
         std::string output_file = remove_symlink(file_dir.replace_extension(".o"));
         output.push_back(output_file);
-        maker.build(remove_symlink(p), output_file, "bd");
+        maker.build(remove_symlink(p), output_file, "compile");
     }
     
     // Generate link sequence
 
-    maker.build(util::stringify_list(output), (bin / shinobi.get("PROJECT_NAME", "untitled")).string(), "ld");
+    maker.build(util::stringify_list(output), (bin / shinobi.get("PROJECT_NAME", "untitled")).string(), "link");
 }
