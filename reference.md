@@ -1,4 +1,4 @@
-# Lexical Syntax
+## Lexical Syntax
 
 Anything beginning with `;` or `#` denotes a comment. If the tokens are placed anywhere other than the beginning, then the contents are not commented out. Shinobi has multiple variables to configure the output of the generated file. These are case-sensitive and can be modified by two operators. The first operator is `:=`, which assigns and overrides the contents. The second is `+=` which appends and doesn't override the contents of the variable. Variables follow the following syntax:
 
@@ -7,7 +7,7 @@ Anything beginning with `;` or `#` denotes a comment. If the tokens are placed a
 
 If a given variable is missing, a specified sensible default value is provided instead.
 
-## Platform Dependent Assignment
+### Platform Dependent Assignment
 
 Sometimes, we want to have certain compile-flags be platform dependent or even something else entirely. Shinobi supports this by the use of an if statement. For example, suppose we wanted to add `NOMINMAX` if Windows is the current platform. We could express this as follows:
 
@@ -31,56 +31,64 @@ To reiterate, the syntax is as follows:
     endif
 
 
-# Available Variables
+## Available Variables
 
-## BUILDDIR
+### BUILDDIR
+
+**Default value:** `bin`
 
 The directory where the resulting executable and ninja log files are dropped to. This variable shouldn't have a leading / or \ as that will probably mess up the resulting output file. If the directory contains spaces, quotes should be used around the directory. It makes no sense to have multiple values for this variable.
 
-## PROJECT_NAME
+### PROJECT_NAME
 
-**Default value:** untitled
+**Default value:** `untitled`
 
 The resulting name of the executable. The resulting executable is found under the `BUILDDIR` directory.
 
-## CXX
+### CXX
 
-**Default value:** g++
+**Default value:** `g++`
 
 The compiler executable being used. The compiler could theoretically be `gcc`, `g++`, `clang`, `clang++` or any of those variants that support their compiler flags and syntax.
 
-## CXXFLAGS
+### CXXFLAGS
 
-**Default value:** -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2
+**Default value:** `-std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2`
 
 The compiler flags being passed to the compiler. These are passed during the *compiling* phase, not the linking phase. 
 
-## DEFINES
+### DEFINES
 
-**Default value:** -DNDEBUG
+**Default value:** `-DNDEBUG`
 
 The preprocessor directives to be defined by the compiler. It is the equivalent to `#define STUFF`. Following that example, the resulting define would be `-DSTUFF`.
 
-## INCLUDE_FLAGS
+### INCLUDE_FLAGS
 
-**Default value:** -I.
+**Default value:** `-I.`
 
 The directories the compiler should look for when using `#include` or any similar directive. These are usually prefixed with `-I`, e.g. `-I"directory"`.
 
-## LIBRARY_FLAGS
+### LIBRARY_FLAGS
 
 **No default value**
 
 The flags to be passed to the linker during linking time. The order is usually important. These are prefixed with `-l` as a shortcut to `libname.a`. So following that example, the resulting flag would be `-lname`.
 
-## LIBRARY_PATHS
+### LIBRARY_PATHS
 
 **No default value**
 
 The directories the compiler should look for to find libraries. These are usually prefixed with `-L`, e.g. `-L"directory"`. 
 
-## OBJDIR
+### OBJDIR
 
-**Default value:** obj
+**Default value:** `obj`
 
 Similar to `BUILDDIR`, the directory where the resulting .o files are stored. This variable shouldn't have a leading / or \ as that will probably mess up the resulting output file. If the directory contains spaces, quotes should be used around the directory. It makes no sense to have multiple values for this variable.
+
+### SRCDIR
+
+**Default value:** `./`
+
+The directory that is recursively searched to find `.cpp`, `.cxx`, `.cc`, `.c++`, and `.c` files for building. The resulting files are then built separately and linked together to an executable whose name is given by the `PROJECT_NAME` variable. By default, `shinobi` looks for every file that meets the requirements specified earlier. If the directory contains spaces, quotes should be used around the directory. Currently only one directory is supported, though more directories will be supported soon.
