@@ -37,7 +37,7 @@ Along with those variables, `;` and `#` in the beginning of a line denotes a com
 
 ### Platform Dependent Assignment
 
-Sometimes, we want to have certain compile-flags be platform dependent or even something else entirely. Shinobi supports this by the use of an if statement. For example, suppose we wanted to add NOMINMAX if Windows is the current platform. We could express this as follows:
+Sometimes, we want to have certain compile-flags be platform dependent or even something else entirely. Shinobi supports this by the use of an if statement. For example, suppose we wanted to add `NOMINMAX` if Windows is the current platform. We could express this as follows:
 
     # Set up defines for all operating systems
     DEFINES := -DNDEBUG
@@ -94,4 +94,4 @@ These are actually the files used to build `shinobi` itself. It assumes Boost li
 
 # Compiling shinobi
 
-`shinobi` requires any recent compiler using C++11 and variadic arguments. Boost.Filesystem is also required for the cross-platform file handling. 
+`shinobi` requires any recent compiler using C++11 and variadic templates. Boost.Filesystem is also required for the cross-platform file handling. By theory any GCC over 4.7 and Clang over 3.1 should work. VS2013 might work also.
