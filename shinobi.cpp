@@ -56,8 +56,8 @@ int main() {
     maker.variable("lib", shinobi.get("LIBRARY_FLAGS", ""));
     maker.variable("def", shinobi.get("DEFINES", "-DNDEBUG"));
 
-    maker.rule("bd", "${cxx} ${cxxflags} ${def} -c ${in} -o ${out} ${incflags}");
-    maker.rule("ld", "${cxx} ${in} -o ${out} ${libpath} ${lib}");
+    maker.rule("bd", "deps = gcc", "depfile = ${out}.d", "command = ${cxx} -MMD -MF ${out}.d ${cxxflags} ${def} -c ${in} -o ${out} ${incflags}");
+    maker.rule("ld", "command = ${cxx} ${in} -o ${out} ${libpath} ${lib}");
 
     std::vector<fs::path> input;
     std::vector<std::string> output;

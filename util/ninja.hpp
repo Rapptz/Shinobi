@@ -2,6 +2,7 @@
 #define UTIL_NINJA_HPP
 
 #include <ostream>
+#include <type_traits>
 
 namespace util {
 template<class CharT>
@@ -13,8 +14,15 @@ struct basic_ninja {
         return *this;
     }
 
-    basic_ninja& rule(const std::string& name, const std::string& content) {
-        out << "rule " << name << "\n    command = " << content << "\n\n";
+    template<typename... Args>
+    basic_ninja& rule(const std::string& name, Args&&... args) {
+        typename std::common_type<Args...>::type command[] = { std::forward<Args>(args)... };
+        out << "rule " << name;
+
+        for(auto&& i : command)
+            out << "\n    " << i;
+
+        out << "\n\n";
         return *this;
     }
 
