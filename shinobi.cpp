@@ -16,8 +16,9 @@ void make_default_shinobi() {
            "CXX := g++\n"
            "CXXFLAGS += -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2\n"
            "INCLUDE_FLAGS += -I.\n"
-           "LIBRARY_PATHS +=\n"
-           "LIBRARY_FLAGS +=\n"
+           "LINK_FLAGS += -static\n"
+           "LIB_PATHS +=\n"
+           "LIBS +=\n"
            "DEFINES += -DNDEBUG";
 }
 
@@ -57,8 +58,9 @@ int main() {
     maker.variable("cxx", shinobi.get("CXX", "g++"));
     maker.variable("cxxflags", shinobi.get("CXXFLAGS", "-std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2"));
     maker.variable("incflags", shinobi.get("INCLUDE_FLAGS", "-I."));
-    maker.variable("libpath", shinobi.get("LIBRARY_PATHS", ""));
-    maker.variable("lib", shinobi.get("LIBRARY_FLAGS", ""));
+    maker.variable("ldflags", shinobi.get("LINK_FLAGS", "-static"));
+    maker.variable("libpath", shinobi.get("LIB_PATHS", ""));
+    maker.variable("libs", shinobi.get("LIBS", ""));
     maker.variable("def", shinobi.get("DEFINES", "-DNDEBUG"));
 
     maker.newline();
@@ -67,7 +69,7 @@ int main() {
                      "depfile = $out.d", 
                      "command = $cxx -MMD -MF $out.d $cxxflags $def -c $in -o $out $incflags",
                      "description = Building $in to $out");
-    maker.rule("link", "command = $cxx $in -o $out $libpath $lib", "description = Linking $out");
+    maker.rule("link", "command = $cxx $in -o $out $ldflags $libpath $libs", "description = Linking $out");
 
     std::vector<fs::path> input;
     std::vector<std::string> output;

@@ -5,7 +5,17 @@ Anything beginning with `;` or `#` denotes a comment. If the tokens are placed a
     VARIABLE_NAME operator VALUE
 
 
-If a given variable is missing, a specified sensible default value is provided instead.
+If a given variable is missing, a specified sensible default value is provided instead. Variable assignment must be put on a single line, so the following won't work:
+
+    DEFINES += -DNDEBUG \
+               -DNOMINMAX \
+               -DSTUFF
+
+
+instead use the following:
+
+    DEFINES += -DNDEBUG -DNOMINMAX -DSTUFF
+
 
 ### Platform Dependent Assignment
 
@@ -69,17 +79,23 @@ The preprocessor directives to be defined by the compiler. It is the equivalent 
 
 The directories the compiler should look for when using `#include` or any similar directive. These are usually prefixed with `-I`, e.g. `-I"directory"`.
 
-### LIBRARY_FLAGS
+### LIBS
 
 **No default value**
 
-The flags to be passed to the linker during linking time. The order is usually important. These are prefixed with `-l` as a shortcut to `libname.a`. So following that example, the resulting flag would be `-lname`.
+The library flags to be passed to the linker during linking time. The order is usually important. These are prefixed with `-l` as a shortcut to `libname.a`. So following that example, the resulting flag would be `-lname`.
 
-### LIBRARY_PATHS
+### LIB_PATHS
 
 **No default value**
 
 The directories the compiler should look for to find libraries. These are usually prefixed with `-L`, e.g. `-L"directory"`. 
+
+### LINK_FLAGS
+
+**Default value:** `-static`
+
+The flags to be passed to the linker during linking time. Usually to set if something is statically linked or dynamically linked. These flags are passed before `LIB_PATHS` and `LIBS`.
 
 ### OBJDIR
 
