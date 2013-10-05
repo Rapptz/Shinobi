@@ -9,7 +9,7 @@ namespace fs = boost::filesystem;
 
 void make_default_shinobi() {
     std::ofstream out("Shinobi");
-    out << "# The default Shinobi file. See README.md for syntax help.\n\n"
+    out << "# The default Shinobi file. See reference.md for syntax help.\n\n"
            "PROJECT_NAME := untitled\n"
            "BUILDDIR := bin\n"
            "OBJDIR := obj\n"
