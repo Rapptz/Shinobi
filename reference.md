@@ -27,16 +27,25 @@ Sometimes, we want to have certain compile-flags be platform dependent or even s
     # Other info...
 
     # Windows specific code
-    if Windows
+    if(Windows)
     DEFINES += -DNOMINMAX
     endif
 
+The syntax for an if-statement is simple, it's similar to those found in C-like languages in which the boolean expression is 
+enclosed in parentheses. Certain boolean variables are supported and will be listed below. They are all case insensitive.
 
-The syntax is pretty straight forward. You start an if block with the `if` statement followed by a space and then the operating system you're targetting, then the variables that need modifying on a newline and finish it up with the `endif` statement. Current supported strings are `Windows`, `Linux`, and `MacOS`. If neither of those are found then the platform is called `Other`. These are all case sensitive. 
+| Variable | Description                                        |
+|:--------:|:-----------:                                       |
+| Windows  | Shinobi is ran in the Windows environment.         |
+| MacOS    | Shinobi is ran in the MacOS environment.           |
+| Linux    | Shinobi is ran in the Linux environment.           |
+| Debug    | The `-d` or `--debug` flags are passed to Shinobi. |
+
+
 
 To reiterate, the syntax is as follows:
 
-    if OPERATING_SYSTEM
+    if(BOOLEAN_VARIABLE)
     EXPRESSIONS
     endif
 

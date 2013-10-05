@@ -4,6 +4,8 @@
 #include <util/ninja.hpp>
 #include <algorithm>
 #include <iostream>
+#include <iomanip>
+#include <set>
 
 namespace fs = boost::filesystem;
 
@@ -38,13 +40,30 @@ std::string remove_symlink(const fs::path& p) noexcept {
     return result;
 }
 
-int main() {
+void show_help() noexcept {
+    std::cout << "usage: shinobi [options]\n\n";
+    std::cout << std::left << '\t' << std::setw(25) << "-h, --help" << "show this message and exit" << '\n';
+    std::cout << std::left << '\t' << std::setw(25) << "-d, --debug" << "create debug ninja file" << '\n'; 
+}
+
+int main(int argc, char* argv[]) {
     auto dir = fs::current_path();
     util::parser shinobi;
 
     if(!shinobi.is_open()) {
         make_default_shinobi();
         shinobi.reopen();
+    }
+
+    std::set<std::string> args(argv, argv + argc);
+
+    if(args.count("-h") || args.count("--help")) {
+        show_help();
+        return 0;
+    }
+
+    if(args.count("-d") || args.count("--debug")) {
+        shinobi.debug = true;
     }
 
     shinobi.parse();
