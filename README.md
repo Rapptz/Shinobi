@@ -11,59 +11,47 @@ Currently only `clang++` and `g++` are supported. Of course, `gcc` and `clang` a
 
 In order to run `shinobi`, you need a Shinobi file without any extension (note the uppercase S). This file has specific variable names and parsing rules that allow the creation of the build.ninja file. By default, invoking `shinobi` without an existing Shinobi file will lead to a default one being created with the following material:
 
+    # The default Shinobi file. See reference.md for syntax help.
     PROJECT_NAME := untitled
     BUILDDIR := bin
     OBJDIR := obj
     CXX := g++
     CXXFLAGS += -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2
     INCLUDE_FLAGS += -I.
-    LIBRARY_PATHS +=
-    LIBRARY_FLAGS +=
+    LINK_FLAGS += -static
+    LIB_PATHS +=
+    LIBS +=
     DEFINES += -DNDEBUG
 
 Reference for the Shinobi file can be found in reference.md
 
 # Example Files
 
-## Shinobi
+The following Shinobi file will generate the build.ninja file given in the repository. It assumes that the boost libraries are
+in a system directory.
+
 
     PROJECT_NAME := shinobi
+    BUILDDIR := bin
+    OBJDIR := obj
     CXX := g++
     CXXFLAGS += -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2
     INCLUDE_FLAGS += -I.
-    LIBRARY_FLAGS += -static -lboost_system -lboost_filesystem
+    LINK_FLAGS += -static -lboost_system -lboost_filesystem
+    LIB_PATHS +=
+    LIBS +=
     DEFINES += -DNDEBUG
 
-
-## build.ninja
-
-    ninja_required_version = 1.3
-    builddir = bin
-    objdir = obj
-    cxx = g++
-    cxxflags = -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2
-    incflags = -I.
-    libpath = 
-    lib = -static -lboost_system -lboost_filesystem
-    def = -DNDEBUG
-
-    rule compile
-        deps = gcc
-        depfile = $out.d
-        command = $cxx -MMD -MT $out -MF $out.d $cxxflags $def -c $in -o $out $incflags
-        description = Building $in to $out
-
-    rule link
-        command = $cxx $in -o $out $libpath $lib
-        description = Linking $out
-
-    build $objdir/shinobi.o: compile shinobi.cpp
-
-    build $builddir/shinobi: link $objdir/shinobi.o
-
-
-These are actually the files used to build `shinobi` itself. It assumes Boost libraries are in the system directories.
+    if(debug)
+    CXXFLAGS += -g
+    endif
 
 # Compiling shinobi
 
-`shinobi` requires any recent compiler using C++11 and variadic templates. Boost.Filesystem is also required for the cross-platform file handling. By theory any GCC over 4.7 and Clang over 3.1 should work. VS2013 might work also.
+`shinobi` requires any recent compiler using C++11 and variadic templates. Boost.Filesystem is required for the cross-platform 
+file handling and Boost.Xpressive is used for the parsing of the Shinobi file. In theory any GCC over 4.7 and Clang over 3.1 
+should work. VS2013 might work also.
+
+In order to compile `shinobi`, just run `ninja`. You might need to add the location of your Boost files to the `incflags`
+and `libpaths` variables in the build.ninja file. `incflags` is the variable that looks for the include paths, while `libpaths`
+is the variable that looks for the .a file paths.

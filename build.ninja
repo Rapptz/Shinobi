@@ -4,9 +4,9 @@ objdir = obj
 cxx = g++
 cxxflags = -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2
 incflags = -I.
-ldflags = -static -lboost_system -lboost_filesystem
+ldflags = -static
 libpath = 
-libs = 
+libs = -lboost_system -lboost_filesystem
 def = -DNDEBUG
 
 rule compile
