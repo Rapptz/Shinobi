@@ -27,7 +27,7 @@ static const xp::sregex endif = *xp::_s >> (xp::s1 = xp::as_xpr("endif")) >> *xp
 static const xp::sregex comment = (xp::set = ';', '#') >> +xp::_;
 
 namespace util {
-parser::parser() noexcept: reader("Shinobi"), debug(false) {
+parser::parser() noexcept: reader("Shinobi"), if_block(false), debug(false) {
     #if defined(SHINOBI_WINDOWS)
     platform = "windows";
 
@@ -54,6 +54,11 @@ void parser::parse_if_block() noexcept {
     xp::smatch what;
 
     while(std::getline(reader, lines)) {
+        if(xp::regex_match(lines, what, endif)) {
+            if_block = false;
+            break;
+        }
+
         if(xp::regex_match(lines, what, assign)) {
             file.emplace(what[1], what[2]);
             continue;
@@ -65,10 +70,6 @@ void parser::parse_if_block() noexcept {
                 continue;
             }
             file.emplace(what[1], what[2]);
-        }
-
-        if(xp::regex_match(lines, what, endif)) {
-            break;
         }
     }
 }
@@ -83,18 +84,25 @@ void parser::parse() noexcept {
         // If block parsing
         
         if(xp::regex_match(lines, what, if_stm)) {
+            if_block = true;
             const std::string& x = what[1].str();
             if(boost::iequals(x, platform) || (debug && boost::iequals(x, std::string("debug")))) {
                 parse_if_block();
             }
+            continue;
         }
 
-        if(xp::regex_match(lines, what, assign)) {
+        if(xp::regex_match(lines, what, endif)) {
+            if_block = false;
+            continue;
+        }
+
+        if(!if_block && xp::regex_match(lines, what, assign)) {
             file.emplace(what[1].str(), what[2].str());
             continue;
         }
 
-        if(xp::regex_match(lines, what, append)) {
+        if(!if_block && xp::regex_match(lines, what, append)) {
             if(file.count(what[1].str())) {
                 file[what[1].str()] += ' ' + what[2].str();
                 continue;

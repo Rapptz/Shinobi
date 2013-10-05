@@ -11,6 +11,7 @@ private:
     std::unordered_map<std::string, std::string> file;
     std::ifstream reader;
     std::string platform;
+    bool if_block;
     void parse_if_block() noexcept;
 public:
     bool debug;
