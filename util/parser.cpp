@@ -8,7 +8,8 @@ static const xp::sregex var_names = xp::as_xpr("LIBS") | "PROJECT_NAME"  | "BUIL
                                     "DEFINES"          | "INCLUDE_FLAGS" | "LIB_PATHS" | "LINK_FLAGS" | "OBJDIR"   |
                                     "SRCDIR";
 
-static const xp::sregex bools = xp::icase("Windows") | xp::icase("MacOS") | xp::icase("Linux") | xp::icase("Debug");
+static const xp::sregex bools = xp::icase("Windows") | xp::icase("MacOS")   | xp::icase("Linux") | 
+                                xp::icase("Debug")   | xp::icase("Release");
 
 // \s*(vars)\s*:=\s*(.+)
 static const xp::sregex assign = *xp::_s >> (xp::s1 = var_names) >> *xp::_s >> ":=" >> *xp::_s >> (xp::s2 = +xp::_);
@@ -86,7 +87,9 @@ void parser::parse() noexcept {
         if(xp::regex_match(lines, what, if_stm)) {
             if_block = true;
             const std::string& x = what[1].str();
-            if(boost::iequals(x, platform) || (debug && boost::iequals(x, std::string("debug")))) {
+            bool debug_found = (debug && boost::iequals(x, std::string("debug")));
+            bool release_found = (!debug && boost::iequals(x, std::string("release")));
+            if(boost::iequals(x, platform) || debug_found || release_found) {
                 parse_if_block();
             }
             continue;

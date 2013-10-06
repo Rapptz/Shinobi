@@ -43,7 +43,8 @@ std::string remove_symlink(const fs::path& p) noexcept {
 void show_help() noexcept {
     std::cout << "usage: shinobi [options]\n\n";
     std::cout << std::left << '\t' << std::setw(25) << "-h, --help" << "show this message and exit" << '\n';
-    std::cout << std::left << '\t' << std::setw(25) << "-d, --debug" << "create debug ninja file" << '\n'; 
+    std::cout << std::left << '\t' << std::setw(25) << "-d, --debug" << "create debug ninja file" << '\n';
+    std::cout << std::left << '\t' << std::setw(25) << "-r, --release" << "create release ninja file (default)" << '\n';
 }
 
 int main(int argc, char* argv[]) {
@@ -64,6 +65,10 @@ int main(int argc, char* argv[]) {
 
     if(args.count("-d") || args.count("--debug")) {
         shinobi.debug = true;
+    }
+
+    if(args.count("-r") || args.count("--debug")) {
+        shinobi.debug = false;
     }
 
     shinobi.parse();

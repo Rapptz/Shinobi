@@ -34,13 +34,13 @@ Sometimes, we want to have certain compile-flags be platform dependent or even s
 The syntax for an if-statement is simple, it's similar to those found in C-like languages in which the boolean expression is 
 enclosed in parentheses. Certain boolean variables are supported and will be listed below. They are all case insensitive.
 
-| Variable | Description                                        |
-|:--------:|:-----------:                                       |
-| Windows  | Shinobi is ran in the Windows environment.         |
-| MacOS    | Shinobi is ran in the MacOS environment.           |
-| Linux    | Shinobi is ran in the Linux environment.           |
-| Debug    | The `-d` or `--debug` flags are passed to Shinobi. |
-
+| Variable | Description                                                            |
+|:--------:|:-----------:                                                           |
+| Windows  | Shinobi is ran in the Windows environment.                             |
+| MacOS    | Shinobi is ran in the MacOS environment.                               |
+| Linux    | Shinobi is ran in the Linux environment.                               |
+| Debug    | The `-d` or `--debug` flags are passed to Shinobi.                     |
+| Release  | The `-r` or `--release` flags are passed to Shinobi or Shinobi is ran. |
 
 
 To reiterate, the syntax is as follows:
