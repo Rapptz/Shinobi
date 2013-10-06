@@ -3,8 +3,18 @@
 
 #include <ostream>
 #include <type_traits>
+#include <string>
 
 namespace util {
+inline std::string replace_all(std::string str, const std::string& from, const std::string& to) {
+    size_t start_pos = 0;
+    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
+    return str;
+}
+
 template<class CharT>
 struct basic_ninja {
     std::basic_ostream<CharT>& out;
@@ -32,7 +42,9 @@ struct basic_ninja {
     }
 
     basic_ninja& build(const std::string& input, const std::string& output, const std::string& rule) {
-        out << "build " << output << ": " << rule << ' ' << input << "\n\n";
+        auto out_str = replace_all(output, "\\", "/");
+        auto in_str = replace_all(input, "\\", "/");
+        out << "build " << out_str << ": " << rule << ' ' << in_str << "\n\n";
         return *this;
     }
 };
