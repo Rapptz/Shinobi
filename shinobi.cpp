@@ -98,10 +98,18 @@ int main(int argc, char* argv[]) {
     std::vector<fs::path> input;
     std::vector<std::string> output;
 
-    for(fs::recursive_directory_iterator it(shinobi.get("SRCDIR", ".")), end; it != end; ++it) {
-        auto p = it->path();
-        if(util::extension_is(p.string(), ".cpp", ".cxx", ".cc", ".c", ".c++")) {
-            input.push_back(p);
+    auto input_dirs = shinobi.get_list("SRCDIR");
+
+    if(input_dirs.empty()) {
+        input_dirs.push_back(".");
+    }
+
+    for(auto&& d : input_dirs) {
+        for(fs::recursive_directory_iterator it(d), end; it != end; ++it) {
+            auto p = it->path();
+            if(util::extension_is(p.string(), ".cpp", ".cxx", ".cc", ".c", ".c++")) {
+                input.push_back(p);
+            }
         }
     }
 
