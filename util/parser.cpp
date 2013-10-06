@@ -1,4 +1,5 @@
 #include "parser.hpp"
+#include "string.hpp"
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
@@ -50,6 +51,28 @@ void parser::reopen() noexcept {
     reader.open("Shinobi");
 }
 
+void parser::parse_assignment(const std::string& key, const std::string& value) noexcept {
+    std::istringstream in(value);
+
+    std::string temp;
+
+    file[key].clear();
+
+    while(in >> temp) {
+        file[key].emplace_back(temp);
+    }
+}
+
+void parser::parse_append(const std::string& key, const std::string& value) noexcept {
+    std::istringstream in(value);
+
+    std::string temp;
+
+    while(in >> temp) {
+        file[key].emplace_back(temp);
+    }
+}
+
 void parser::parse_if_block() noexcept {
     std::string lines;
     xp::smatch what;
@@ -61,16 +84,12 @@ void parser::parse_if_block() noexcept {
         }
 
         if(xp::regex_match(lines, what, assign)) {
-            file.emplace(what[1], what[2]);
+            parse_assignment(what[1].str(), what[2].str());
             continue;
         }
 
         if(xp::regex_match(lines, what, append)) {
-            if(file.count(what[1])) {
-                file[what[1]] += ' ' + what[2];
-                continue;
-            }
-            file.emplace(what[1], what[2]);
+            parse_append(what[1].str(), what[2].str());
         }
     }
 }
@@ -78,6 +97,7 @@ void parser::parse_if_block() noexcept {
 void parser::parse() noexcept {
     std::string lines;
     xp::smatch what;
+
     while(std::getline(reader, lines)) {
         if(xp::regex_match(lines, what, comment))
             continue;
@@ -101,23 +121,19 @@ void parser::parse() noexcept {
         }
 
         if(!if_block && xp::regex_match(lines, what, assign)) {
-            file.emplace(what[1].str(), what[2].str());
+            parse_assignment(what[1].str(), what[2].str());
             continue;
         }
 
         if(!if_block && xp::regex_match(lines, what, append)) {
-            if(file.count(what[1].str())) {
-                file[what[1].str()] += ' ' + what[2].str();
-                continue;
-            }
-            file.emplace(what[1].str(), what[2].str());
+            parse_append(what[1].str(), what[2].str());
         }
     }
 }
 
 std::string parser::get(const std::string& key, const std::string& default_value) const noexcept {
     auto it = file.find(key);
-    return it != file.end() ? it->second : default_value;
+    return it != file.end() ? stringify_list(it->second) : default_value;
 }
 
 std::string parser::get_platform() const {

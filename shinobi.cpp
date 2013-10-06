@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
         shinobi.debug = true;
     }
 
-    if(args.count("-r") || args.count("--debug")) {
+    if(args.count("-r") || args.count("--release")) {
         shinobi.debug = false;
     }
 

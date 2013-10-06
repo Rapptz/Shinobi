@@ -5,7 +5,7 @@
 #include <sstream>
 
 namespace util {
-bool ends_with(const std::string& in, const std::string& other) {
+inline bool ends_with(const std::string& in, const std::string& other) {
     if(in.length() >= other.length())
         return in.compare(in.length() - other.length(), other.length(), other) == 0;
     else
@@ -13,7 +13,7 @@ bool ends_with(const std::string& in, const std::string& other) {
 }
 
 template<typename Cont>
-std::string stringify_list(const Cont& list) {
+inline std::string stringify_list(const Cont& list) {
     std::ostringstream out;
     auto first = list.cbegin();
     auto last = list.cend();
@@ -26,12 +26,12 @@ std::string stringify_list(const Cont& list) {
     return out.str();
 }
 
-bool extension_is(const std::string&) {
+inline bool extension_is(const std::string&) {
     return false;
 }
 
 template<typename T, typename... Args>
-bool extension_is(const std::string& str, T&& t, Args&&... args) {
+inline bool extension_is(const std::string& str, T&& t, Args&&... args) {
     return ends_with(str, std::forward<T>(t)) || extension_is(str, std::forward<Args>(args)...);
 }
 } // util
