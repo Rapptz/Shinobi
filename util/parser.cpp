@@ -176,15 +176,15 @@ std::vector<std::string> parser::get_list(const std::string& key) const noexcept
     return it != file.end() ? it->second : std::vector<std::string>{};
 }
 
-std::string parser::get_platform() const {
+std::string parser::get_platform() const noexcept {
     return platform;
 }
 
-auto parser::begin() -> decltype(file.begin()) {
+auto parser::begin() const noexcept -> decltype(file.begin()) {
     return file.begin();
 }
 
-auto parser::end() -> decltype(file.end()) {
+auto parser::end() const noexcept -> decltype(file.end()) {
     return file.end();
 }
 } // util

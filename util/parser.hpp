@@ -25,9 +25,9 @@ public:
     void parse() noexcept;
     std::string get(const std::string&, const std::string&) const noexcept;
     std::vector<std::string> get_list(const std::string&) const noexcept;
-    std::string get_platform() const;
-    auto begin() -> decltype(file.begin());
-    auto end() -> decltype(file.end());
+    std::string get_platform() const noexcept;
+    auto begin() const noexcept -> decltype(file.begin());
+    auto end() const noexcept -> decltype(file.end());
 };
 } // util
 
