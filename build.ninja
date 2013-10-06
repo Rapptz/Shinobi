@@ -21,7 +21,9 @@ rule link
 
 build $objdir/shinobi.o: compile shinobi.cpp
 
+build $objdir/util/maker.o: compile util/maker.cpp
+
 build $objdir/util/parser.o: compile util/parser.cpp
 
-build $builddir/shinobi: link $objdir/shinobi.o $objdir/util/parser.o
+build $builddir/shinobi: link $objdir/shinobi.o $objdir/util/maker.o $objdir/util/parser.o
 
