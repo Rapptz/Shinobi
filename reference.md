@@ -106,11 +106,18 @@ The compiler flags being passed to the compiler. These are passed during the *co
 The preprocessor directives to be defined by the compiler. It is the equivalent to `#define STUFF`. Following that example, 
 the resulting define would be `-DSTUFF`.
 
+### FILES
+
+**No default value**
+
+Extraneous files that must be built. Directory must be specified unless the directory is `./`. These files must have the
+extension of `cpp`, `cxx`, `c++`, `cc`, or `c`. To build an entire directory, look into `SRCDIR`.
+
 ### IGNORED_FILES
 
 **No default value**
 
-The files that will be ignored. If the SRCDIR listed is `./`, then you must specify the ignored files without the relative 
+The files that will be ignored. If the SRCDIR listed is `./`, then the ignored files must be specified without the relative 
 path. Otherwise it must list the SRCDIR in the name, e.g. if SRCDIR is `src` then the ignored file must be `src/stuff.cpp`.
 You must use forward-slashes (/) for paths and not back-slashes (\).
 

@@ -90,6 +90,14 @@ void maker::fill_source_files() noexcept {
             input.erase(it);
         }
     }
+
+    auto added = shinobi.get_list("FILES");
+
+    for(auto&& i : added) {
+        if(extension_is(i, ".cpp", ".cxx", ".cc", ".c", ".c++")) {
+            input.emplace(i);
+        }
+    }
 }
 
 void maker::regular_parse() {

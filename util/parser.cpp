@@ -9,7 +9,7 @@ namespace xp = boost::xpressive;
 
 static const xp::sregex var_names = xp::as_xpr("LIBS") | "PROJECT_NAME"  | "BUILDDIR"  | "CXX"        | "CXXFLAGS" |
                                     "DEFINES"          | "INCLUDE_FLAGS" | "LIB_PATHS" | "LINK_FLAGS" | "OBJDIR"   |
-                                    "SRCDIR"           | "IGNORED_FILES";
+                                    "SRCDIR"           | "IGNORED_FILES" | "FILES";
 
 static const xp::sregex bools = xp::icase("Windows") | xp::icase("MacOS")   | xp::icase("Linux") | 
                                 xp::icase("Debug")   | xp::icase("Release");
