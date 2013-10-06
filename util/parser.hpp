@@ -16,6 +16,7 @@ private:
     void parse_if_block() noexcept;
     void parse_assignment(const std::string&, const std::string&) noexcept;
     void parse_append(const std::string&, const std::string&) noexcept;
+    void parse_subtract(const std::string&, const std::string&) noexcept;
 public:
     bool debug;
     parser() noexcept;

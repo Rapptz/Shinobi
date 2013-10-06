@@ -1,7 +1,9 @@
 #include "parser.hpp"
 #include "string.hpp"
 #include <boost/xpressive/xpressive.hpp>
+#include <boost/xpressive/regex_actions.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <algorithm>
 
 namespace xp = boost::xpressive;
 
@@ -17,6 +19,9 @@ static const xp::sregex assign = *xp::_s >> (xp::s1 = var_names) >> *xp::_s >> "
 
 // \s*(vars)\s*\+=\s*(.+)
 static const xp::sregex append = *xp::_s >> (xp::s1 = var_names) >> *xp::_s >> "+=" >> *xp::_s >> (xp::s2 = +xp::_);
+
+// \s*(vars)\s*-=\s*(.+)
+static const xp::sregex subtract = *xp::_s >> (xp::s1 = var_names) >> *xp::_s >> "-=" >> *xp::_s >> (xp::s2 = +xp::_);
 
 // \s*if\s*(bools)\s*
 static const xp::sregex if_stm = *xp::_s >> "if" >> *xp::_s >> xp::as_xpr('(') >> (xp::s1 = bools) >> 
@@ -73,6 +78,26 @@ void parser::parse_append(const std::string& key, const std::string& value) noex
     }
 }
 
+void parser::parse_subtract(const std::string& key, const std::string& value) noexcept {
+
+    std::vector<std::string> temp;
+    // (\S+)
+    static const xp::sregex non_space = (xp::s1 = (+(~xp::_s)))[xp::ref(temp)->*xp::push_back(xp::s1)];
+
+    static const xp::sregex action = non_space >> *(+xp::_s >> non_space);
+
+    auto it = file.find(key);
+
+    auto f = [&temp](const std::string& str) -> bool {
+        return std::find(std::begin(temp), std::end(temp), str) != std::end(temp);
+    };
+
+    if(it != file.end()) {
+        xp::regex_match(value, action);
+        it->second.erase(std::remove_if(it->second.begin(), it->second.end(), f), it->second.end());
+    }
+}
+
 void parser::parse_if_block() noexcept {
     std::string lines;
     xp::smatch what;
@@ -90,6 +115,11 @@ void parser::parse_if_block() noexcept {
 
         if(xp::regex_match(lines, what, append)) {
             parse_append(what[1].str(), what[2].str());
+            continue;
+        }
+
+        if(xp::regex_match(lines, what, subtract)) {
+            parse_subtract(what[1].str(), what[2].str());
         }
     }
 }
@@ -127,6 +157,11 @@ void parser::parse() noexcept {
 
         if(!if_block && xp::regex_match(lines, what, append)) {
             parse_append(what[1].str(), what[2].str());
+            continue;
+        }
+
+        if(!if_block && xp::regex_match(lines, what, subtract)) {
+            parse_subtract(what[1].str(), what[2].str());
         }
     }
 }
