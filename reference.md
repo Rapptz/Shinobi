@@ -1,8 +1,21 @@
 ## Lexical Syntax
 
-Anything beginning with `;` or `#` denotes a comment. If the tokens are placed anywhere other than the beginning, then the contents are not commented out. Shinobi has multiple variables to configure the output of the generated file. These are case-sensitive and can be modified by two operators. The first operator is `:=`, which assigns and overrides the contents. The second is `+=` which appends and doesn't override the contents of the variable. Variables follow the following syntax:
+Anything beginning with `;` or `#` denotes a comment. If the tokens are placed anywhere other than the beginning, then the contents are not commented out. Shinobi has multiple variables to configure the output of the generated file. These are case-sensitive and can be modified by two operators. Shinobi has multiple operators and they all do something different. They can be found in the table below.
+
+| Operator | Description                              |
+|:--------:|:----------------------------------------:|
+| +=       | Appends value to variable.               |
+| :=       | Assigns and overrides value to variable. |
+| -=       | Erases value from variable.              |
+
+
+To reiterate the syntax:
+
 
     VARIABLE_NAME operator VALUE
+
+
+Where VARIABLE_NAME is one of the pre-set variables, the operator is found in the table above and VALUE is, well, the value.
 
 
 If a given variable is missing, a specified sensible default value is provided instead. Variable assignment must be put on a single line, so the following won't work:
@@ -35,7 +48,7 @@ The syntax for an if-statement is simple, it's similar to those found in C-like 
 enclosed in parentheses. Certain boolean variables are supported and will be listed below. They are all case insensitive.
 
 | Variable | Description                                                            |
-|:--------:|:-----------:                                                           |
+|:--------:|:----------------------------------------------------------------------:|
 | Windows  | Shinobi is ran in the Windows environment.                             |
 | MacOS    | Shinobi is ran in the MacOS environment.                               |
 | Linux    | Shinobi is ran in the Linux environment.                               |
