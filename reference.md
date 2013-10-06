@@ -1,6 +1,10 @@
 ## Lexical Syntax
 
-Anything beginning with `;` or `#` denotes a comment. If the tokens are placed anywhere other than the beginning, then the contents are not commented out. Shinobi has multiple variables to configure the output of the generated file. These are case-sensitive and can be modified by two operators. Shinobi has multiple operators and they all do something different. They can be found in the table below.
+Anything beginning with `;` or `#` denotes a comment. If the tokens are placed anywhere other than the beginning, then the 
+contents are not commented out. Shinobi has multiple variables to configure the output of the generated file. These are 
+case-sensitive and can be modified by two operators. Shinobi has multiple operators and they all do something different. 
+They can be found in the table below.
+
 
 | Operator | Description                              |
 |:--------:|:----------------------------------------:|
@@ -18,7 +22,8 @@ To reiterate the syntax:
 Where VARIABLE_NAME is one of the pre-set variables, the operator is found in the table above and VALUE is, well, the value.
 
 
-If a given variable is missing, a specified sensible default value is provided instead. Variable assignment must be put on a single line, so the following won't work:
+If a given variable is missing, a specified sensible default value is provided instead. Variable assignment must be put on a 
+single line, so the following won't work:
 
     DEFINES += -DNDEBUG \
                -DNOMINMAX \
@@ -32,7 +37,9 @@ instead use the following:
 
 ### Platform Dependent Assignment
 
-Sometimes, we want to have certain compile-flags be platform dependent or even something else entirely. Shinobi supports this by the use of an if statement. For example, suppose we wanted to add `NOMINMAX` if Windows is the current platform. We could express this as follows:
+Sometimes, we want to have certain compile-flags be platform dependent or even something else entirely. Shinobi supports 
+this by the use of an if statement. For example, suppose we wanted to add `NOMINMAX` if Windows is the current platform. 
+We could express this as follows:
 
     # Set up defines for all operating systems
     DEFINES := -DNDEBUG
@@ -69,7 +76,9 @@ To reiterate, the syntax is as follows:
 
 **Default value:** `bin`
 
-The directory where the resulting executable and ninja log files are dropped to. This variable shouldn't have a leading / or \ as that will probably mess up the resulting output file. If the directory contains spaces, quotes should be used around the directory. It makes no sense to have multiple values for this variable.
+The directory where the resulting executable and ninja log files are dropped to. This variable shouldn't have a leading / 
+or \ as that will probably mess up the resulting output file. If the directory contains spaces, quotes should be used around 
+the directory. It makes no sense to have multiple values for this variable.
 
 ### PROJECT_NAME
 
@@ -81,7 +90,8 @@ The resulting name of the executable. The resulting executable is found under th
 
 **Default value:** `g++`
 
-The compiler executable being used. The compiler could theoretically be `gcc`, `g++`, `clang`, `clang++` or any of those variants that support their compiler flags and syntax.
+The compiler executable being used. The compiler could theoretically be `gcc`, `g++`, `clang`, `clang++` or any of those 
+variants that support their compiler flags and syntax.
 
 ### CXXFLAGS
 
@@ -93,19 +103,30 @@ The compiler flags being passed to the compiler. These are passed during the *co
 
 **Default value:** `-DNDEBUG`
 
-The preprocessor directives to be defined by the compiler. It is the equivalent to `#define STUFF`. Following that example, the resulting define would be `-DSTUFF`.
+The preprocessor directives to be defined by the compiler. It is the equivalent to `#define STUFF`. Following that example, 
+the resulting define would be `-DSTUFF`.
+
+### IGNORED_FILES
+
+**No default value**
+
+The files that will be ignored. If the SRCDIR listed is `./`, then you must specify the ignored files without the relative 
+path. Otherwise it must list the SRCDIR in the name, e.g. if SRCDIR is `src` then the ignored file must be `src/stuff.cpp`.
+You must use forward-slashes (/) for paths and not back-slashes (\).
 
 ### INCLUDE_FLAGS
 
 **Default value:** `-I.`
 
-The directories the compiler should look for when using `#include` or any similar directive. These are usually prefixed with `-I`, e.g. `-I"directory"`.
+The directories the compiler should look for when using `#include` or any similar directive. These are usually prefixed 
+with `-I`, e.g. `-I"directory"`.
 
 ### LIBS
 
 **No default value**
 
-The library flags to be passed to the linker during linking time. The order is usually important. These are prefixed with `-l` as a shortcut to `libname.a`. So following that example, the resulting flag would be `-lname`.
+The library flags to be passed to the linker during linking time. The order is usually important. These are prefixed with 
+`-l` as a shortcut to `libname.a`. So following that example, the resulting flag would be `-lname`.
 
 ### LIB_PATHS
 
@@ -117,16 +138,22 @@ The directories the compiler should look for to find libraries. These are usuall
 
 **Default value:** `-static`
 
-The flags to be passed to the linker during linking time. Usually to set if something is statically linked or dynamically linked. These flags are passed before `LIB_PATHS` and `LIBS`.
+The flags to be passed to the linker during linking time. Usually to set if something is statically linked or dynamically 
+linked. These flags are passed before `LIB_PATHS` and `LIBS`.
 
 ### OBJDIR
 
 **Default value:** `obj`
 
-Similar to `BUILDDIR`, the directory where the resulting .o files are stored. This variable shouldn't have a leading / or \ as that will probably mess up the resulting output file. If the directory contains spaces, quotes should be used around the directory. It makes no sense to have multiple values for this variable.
+Similar to `BUILDDIR`, the directory where the resulting .o files are stored. This variable shouldn't have a leading / or \ 
+as that will probably mess up the resulting output file. If the directory contains spaces, quotes should be used around the 
+directory. It makes no sense to have multiple values for this variable.
 
 ### SRCDIR
 
 **Default value:** `./`
 
-The directory that is recursively searched to find `.cpp`, `.cxx`, `.cc`, `.c++`, and `.c` files for building. The resulting files are then built separately and linked together to an executable whose name is given by the `PROJECT_NAME` variable. By default, `shinobi` looks for every file that meets the requirements specified earlier. If the directory contains spaces, quotes should be used around the directory. Currently only one directory is supported, though more directories will be supported soon.
+The directory that is recursively searched to find `.cpp`, `.cxx`, `.cc`, `.c++`, and `.c` files for building. The resulting 
+files are then built separately and linked together to an executable whose name is given by the `PROJECT_NAME` variable. By 
+default, `shinobi` looks for every file that meets the requirements specified earlier. If the directory contains spaces, 
+quotes should be used around the directory. Multiple directories are supported.

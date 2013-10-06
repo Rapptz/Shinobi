@@ -3,8 +3,8 @@
 
 #if !defined(SHINOBI_VERSION) && !defined(SHINOBI_VERSION_MAJOR) && !defined(SHINOBI_VERSION_MINOR)
 #define SHINOBI_VERSION_MAJOR 0
-#define SHINOBI_VERSION_MINOR 8
-#define SHINOBI_VERSION 0.8
+#define SHINOBI_VERSION_MINOR 9
+#define SHINOBI_VERSION 0.9
 #endif // Versioning
 
 #if defined(_WIN32) || defined(__WIN32__)
