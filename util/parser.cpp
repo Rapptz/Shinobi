@@ -171,6 +171,11 @@ std::string parser::get(const std::string& key, const std::string& default_value
     return it != file.end() ? stringify_list(it->second) : default_value;
 }
 
+std::vector<std::string> parser::get_list(const std::string& key) const noexcept {
+    auto it = file.find(key);
+    return it != file.end() ? it->second : std::vector<std::string>{};
+}
+
 std::string parser::get_platform() const {
     return platform;
 }
