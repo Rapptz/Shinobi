@@ -82,20 +82,20 @@ void maker::fill_source_files() noexcept {
         }
     }
 
+    auto added = shinobi.get_list("FILES");
+
+    for(auto&& i : added) {
+        if(extension_is(i, ".cpp", ".cxx", ".cc", ".c", ".c++")) {
+            input.emplace(i);
+        }
+    }
+
     auto ignored = shinobi.get_list("IGNORED_FILES");
 
     for(auto&& i : ignored) {
         auto it = input.find(i);
         if(it != input.end()) {
             input.erase(it);
-        }
-    }
-
-    auto added = shinobi.get_list("FILES");
-
-    for(auto&& i : added) {
-        if(extension_is(i, ".cpp", ".cxx", ".cc", ".c", ".c++")) {
-            input.emplace(i);
         }
     }
 }

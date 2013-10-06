@@ -119,7 +119,8 @@ extension of `cpp`, `cxx`, `c++`, `cc`, or `c`. To build an entire directory, lo
 
 The files that will be ignored. If the SRCDIR listed is `./`, then the ignored files must be specified without the relative 
 path. Otherwise it must list the SRCDIR in the name, e.g. if SRCDIR is `src` then the ignored file must be `src/stuff.cpp`.
-You must use forward-slashes (/) for paths and not back-slashes (\).
+You must use forward-slashes (/) for paths and not back-slashes (\). The `IGNORED_FILES` overrides files that are in the 
+`FILES` variables and those as a result of `SRCDIR`.
 
 ### INCLUDE_FLAGS
 
