@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
                      "description = Building $in to $out");
     maker.rule("link", "command = $cxx $in -o $out $ldflags $libpath $libs", "description = Linking $out");
 
-    std::vector<fs::path> input;
+    std::set<std::string> input;
     std::vector<std::string> output;
 
     auto input_dirs = shinobi.get_list("SRCDIR");
@@ -108,13 +108,23 @@ int main(int argc, char* argv[]) {
         for(fs::recursive_directory_iterator it(d), end; it != end; ++it) {
             auto p = it->path();
             if(util::extension_is(p.string(), ".cpp", ".cxx", ".cc", ".c", ".c++")) {
-                input.push_back(p);
+                input.emplace(remove_symlink(p));
             }
         }
     }
 
     fs::path bin(shinobi.get("BUILDDIR", "bin"));
     fs::path obj(shinobi.get("OBJDIR", "obj"));
+
+    auto temp = shinobi.get_list("IGNORED_FILES");
+
+    for(auto&& i : temp) {
+        auto it = input.find(i);
+        if(it != input.end()) {
+            input.erase(it);
+        }
+    }
+
 
     if(!fs::is_directory(bin)) {
         fs::create_directory(bin);
@@ -127,15 +137,14 @@ int main(int argc, char* argv[]) {
     // Generate build sequences
 
     for(auto&& p : input) {
-        auto copy = p;
         auto appended_dir = (dir / obj / p).parent_path();
         if(!fs::is_directory(appended_dir)) {
             fs::create_directories(appended_dir);
         }
 
-        std::string output_file = "$objdir/" + remove_symlink(copy.replace_extension(".o"));
+        std::string output_file = "$objdir/" + remove_symlink(fs::path(p).replace_extension(".o"));
         output.push_back(output_file);
-        maker.build(remove_symlink(p), output_file, "compile");
+        maker.build(p, output_file, "compile");
     }
     
     // Generate link sequence
