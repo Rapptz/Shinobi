@@ -93,8 +93,21 @@ public:
         }
     }
 
-    std::string get(const std::string& key) {
+    const std::string& get(const std::string& key) const {
         return data.find(key)->second;
+    }
+
+    std::string& get(const std::string& key) {
+        return data.find(key)->second;
+    }
+
+    bool is_open() const noexcept {
+        return file.is_open();
+    }
+
+    void reopen() noexcept {
+        file.close();
+        file.open("Shinobi2");
     }
 };
 } // util
