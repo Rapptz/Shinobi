@@ -42,17 +42,37 @@ public:
         // parse type-independent defaults
 
         if(json.has<js::Object>("compiler")) {
-            auto compiler_object = json.get<js::Object>("compiler");
+            auto compiler = json.get<js::Object>("compiler");
 
-            if(!compiler_object.has<js::String>("name")) {
+            if(!compiler.has<js::String>("name")) {
                 throw shinobi_error("missing 'name' sub-property of 'compiler'");
             }
 
-            data["compiler.name"] = compiler_object.get<js::String>("name");
+            data["compiler.name"] = compiler.get<js::String>("name");
 
-            if(compiler_object.has<js::Array>("flags")) {
-                data["compiler.flags"] = join_json_list(compiler_object.get<js::Array>("flags"));
+            if(compiler.has<js::Array>("flags")) {
+                data["compiler.flags"] = join_json_list(compiler.get<js::Array>("flags"));
             }
+        }
+
+        if(json.has<js::Object>("linker")) {
+            auto linker = json.get<js::Object>("linker");
+
+            if(linker.has<js::Array>("flags")) {
+                data["linker.flags"] = join_json_list(linker.get<js::Array>("flags"));
+            }
+
+            if(linker.has<js::Array>("libraries")) {
+                data["linker.libraries"] = join_json_list(linker.get<js::Array>("libraries"));
+            }
+
+            if(linker.has<js::Array>("library_paths")) {
+                data["linker.library_paths"] = join_json_list(linker.get<js::Array>("library_paths"));
+            }
+        }
+
+        if(json.has<js::Array>("include_paths")) {
+            data["include.paths"] = join_json_list(json.get<js::Array>("include_paths"));
         }
 
         if(!json.has<js::String>("type")) {
