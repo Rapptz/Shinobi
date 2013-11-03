@@ -35,6 +35,7 @@ public:
     shinobi(): file("Shinobi2") {}
 
     void parse() {
+        json.parse(file);
         if(!json.has<js::String>("project")) {
             throw missing_property("project");
         }
