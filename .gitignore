@@ -1,16 +1,16 @@
 # Sublime-text stuff
-
 *.sublime*
 
 # Shinobi file itself
-
 Shinobi
+Shinobi2
 
 # ninja related files
-
 .ninja*
 
 # bin and obj directories
-
 bin/*
 obj/*
+
+# local .cpp file
+dev.cpp

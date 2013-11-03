@@ -3,10 +3,10 @@ builddir = bin
 objdir = obj
 cxx = g++
 cxxflags = -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2
-incflags = -I.
+incflags = -I. -Ijsonxx
 ldflags = -static
 libpath = 
-libs = -lboost_system -lboost_filesystem
+libs = 
 def = -DNDEBUG
 
 rule compile
@@ -19,11 +19,9 @@ rule link
     command = $cxx $in -o $out $ldflags $libpath $libs
     description = Linking $out
 
-build $objdir/shinobi.o: compile shinobi.cpp
+build $objdir/jsonxx/jsonxx.o: compile jsonxx/jsonxx.cc
 
-build $objdir/util/maker.o: compile util/maker.cpp
+build $objdir/main.o: compile main.cpp
 
-build $objdir/util/parser.o: compile util/parser.cpp
-
-build $builddir/shinobi: link $objdir/shinobi.o $objdir/util/maker.o $objdir/util/parser.o
+build $builddir/shinobi: link $objdir/jsonxx/jsonxx.o $objdir/main.o
 
