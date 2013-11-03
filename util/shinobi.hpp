@@ -75,9 +75,26 @@ public:
             data["include.paths"] = join_json_list(json.get<js::Array>("include_paths"));
         }
 
+        if(json.has<js::Object>("directory")) {
+            auto directory = json.get<js::Object>("directory");
+            data["directory.source"] = directory.get<js::String>("source", ".");
+            data["directory.build"] = directory.get<js::String>("build", "bin");
+            data["directory.object"] = directory.get<js::String>("object", "obj");
+        }
+        else {
+            // default values
+            data["directory.source"] = ".";
+            data["directory.build"] = "bin";
+            data["directory.object"] = "obj";
+        }
+
         if(!json.has<js::String>("type")) {
             throw missing_property("type");
         }
+    }
+
+    std::string get(const std::string& key) {
+        return data.find(key)->second;
     }
 };
 } // util
