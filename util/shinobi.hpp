@@ -94,12 +94,22 @@ public:
         }
     }
 
-    const std::string& get(const std::string& key) const {
+    const std::string& database(const std::string& key) const {
         return data.find(key)->second;
     }
 
-    std::string& get(const std::string& key) {
+    std::string& database(const std::string& key) {
         return data.find(key)->second;
+    }
+
+    template<typename T>
+    const T& get(const std::string& key) const {
+        return json.get<T>(key);
+    }
+
+    template<typename T>
+    T& get(const std::string& key) {
+        return json.get<T>(key);
     }
 
     bool is_open() const noexcept {

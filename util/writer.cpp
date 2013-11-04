@@ -40,8 +40,8 @@ writer::writer(std::fstream& out): file(out), dir(fs::current_path()) {
 }
 
 void writer::create_directories() {
-    build = parser.get("directory.build");
-    object = parser.get("directory.object");
+    build = parser.database("directory.build");
+    object = parser.database("directory.object");
 
     if(!fs::is_directory(build)) {
         fs::create_directories(build);
