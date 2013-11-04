@@ -16,6 +16,7 @@ private:
     js::Object json;
     std::fstream file;
     std::map<std::string, std::string> data;
+    std::string platform;
 
     std::string prefix_list(const js::Array& arr, const std::string& prefix = std::string()) {
         std::ostringstream out;
@@ -58,7 +59,15 @@ private:
         }
     }
 public:
-    shinobi(): file("Shinobi2") {}
+    shinobi(): file("Shinobi2"), platform("other") {
+        #if defined(SHINOBI_WINDOWS)
+        platform = "windows";
+        #elif defined(SHINOBI_LINUX)
+        platform = "linux";
+        #elif defined(SHINOBI_MACOS)
+        platform = "mac";
+        #endif
+    }
 
     void parse() {
         json.parse(file);
