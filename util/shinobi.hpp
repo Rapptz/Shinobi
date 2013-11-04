@@ -17,6 +17,7 @@ private:
     std::fstream file;
     std::map<std::string, std::string> data;
     std::string platform;
+    std::string compiler;
 
     std::string prefix_list(const js::Array& arr, const std::string& prefix = std::string()) {
         std::ostringstream out;
@@ -61,16 +62,17 @@ private:
 
     void parse_compiler(const js::Object& o) {
         if(o.has<js::Object>("compiler")) {
-            auto compiler = o.get<js::Object>("compiler");
+            auto comp = o.get<js::Object>("compiler");
 
-            if(!compiler.has<js::String>("name")) {
+            if(!comp.has<js::String>("name")) {
                 throw shinobi_error("missing 'name' sub-property of 'compiler'");
             }
 
-            data["compiler.name"] = compiler.get<js::String>("name");
+            compiler = comp.get<js::String>("name");
+            data["compiler.name"] = compiler;
 
-            if(compiler.has<js::Array>("flags")) {
-                data["compiler.flags"] = prefix_list(compiler.get<js::Array>("flags"));
+            if(comp.has<js::Array>("flags")) {
+                data["compiler.flags"] = prefix_list(comp.get<js::Array>("flags"));
             }
         }
     }
@@ -88,7 +90,12 @@ private:
             }
 
             if(linker.has<js::Array>("library_paths")) {
-                data["linker.library_paths"] = prefix_list(linker.get<js::Array>("library_paths"));
+                if(!compiler.empty() && compiler != "cl") {
+                    data["linker.library_paths"] = prefix_list(linker.get<js::Array>("library_paths"), "-L");
+                }
+                else {
+                    data["linker.library_paths"] = prefix_list(linker.get<js::Array>("library_paths"));
+                }
             }
         }
     }
@@ -113,7 +120,12 @@ private:
 
     void parse_include(const js::Object& o) {
         if(o.has<js::Array>("include_paths")) {
-            data["include.paths"] = prefix_list(o.get<js::Array>("include_paths"));
+            if(!compiler.empty() && compiler != "cl") {
+                data["include.paths"] = prefix_list(o.get<js::Array>("include_paths"), "-I");
+            }
+            else {
+                data["include.paths"] = prefix_list(o.get<js::Array>("include_paths"));
+            }
         }
     }
 public:
