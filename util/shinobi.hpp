@@ -106,6 +106,14 @@ public:
         return file.is_open();
     }
 
+    bool is_library() const {
+        return file.find("type")->second == "library";
+    }
+
+    bool is_software() const {
+        return file.find("type")->second == "software";
+    }
+
     void reopen() noexcept {
         file.close();
         file.open("Shinobi2");
