@@ -85,6 +85,33 @@ void writer::create_directories() {
     }
 }
 
+void writer::software_variables() {
+    file.variable("builddir", parser.database("directory.build"));
+    file.variable("objdir", parser.database("directory.object"));
+    
+    auto compiler = parser.database("compiler.name");
+    file.variable("cxx", compiler);
+    std::string compile_command("$cxx ");
+
+    if(compiler != "cl") {
+        compile_command += "-MMD -MF $out.d ";
+        if(parser.in_database("compiler.flags")) {
+            file.variable("cxxflags", parser.database("compiler.flags"));
+            compile_command += "$cxxflags ";
+        }
+
+        compile_command += "-c $in -o $out";
+        if(parser.in_database("include.flags")) {
+            file.variable("incflag", parser.database("include.flags"));
+            compile_command += " $incflag";
+        }
+    }
+}
+
+void writer::create_software_file() {
+    software_variables();
+}
+
 void writer::fill_input() {
     auto input_dir = parser.database("directory.source");
 
@@ -97,6 +124,11 @@ void writer::fill_input() {
 }
 
 void writer::create() {
+    parser.parse();
     create_directories();
     fill_input();
+
+    if(parser.is_software()) {
+        create_software_file();
+    }
 }
