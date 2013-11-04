@@ -58,6 +58,64 @@ private:
             data["files.ignored"] = "";
         }
     }
+
+    void parse_compiler(const js::Object& o) {
+        if(o.has<js::Object>("compiler")) {
+            auto compiler = o.get<js::Object>("compiler");
+
+            if(!compiler.has<js::String>("name")) {
+                throw shinobi_error("missing 'name' sub-property of 'compiler'");
+            }
+
+            data["compiler.name"] = compiler.get<js::String>("name");
+
+            if(compiler.has<js::Array>("flags")) {
+                data["compiler.flags"] = prefix_list(compiler.get<js::Array>("flags"));
+            }
+        }
+    }
+
+    void parse_linker(const js::Object& o) {
+        if(o.has<js::Object>("linker")) {
+            auto linker = o.get<js::Object>("linker");
+
+            if(linker.has<js::Array>("flags")) {
+                data["linker.flags"] = prefix_list(linker.get<js::Array>("flags"));
+            }
+
+            if(linker.has<js::Array>("libraries")) {
+                data["linker.libraries"] = prefix_list(linker.get<js::Array>("libraries"));
+            }
+
+            if(linker.has<js::Array>("library_paths")) {
+                data["linker.library_paths"] = prefix_list(linker.get<js::Array>("library_paths"));
+            }
+        }
+    }
+
+    void parse_directory(const js::Object& o) {
+        if(o.has<js::Object>("directory")) {
+            auto directory = o.get<js::Object>("directory");
+
+            if(directory.has<js::String>("source")) {
+                data["directory.source"] = directory.get<js::String>("source");
+            }
+
+            if(directory.has<js::String>("build")) {
+                data["directory.build"] = directory.get<js::String>("build");
+            }
+
+            if(directory.has<js::String>("object")) {
+                data["directory.object"] = directory.get<js::String>("object");
+            }
+        }
+    }
+
+    void parse_include(const js::Object& o) {
+        if(o.has<js::Array>("include_paths")) {
+            data["include.paths"] = prefix_list(o.get<js::Array>("include_paths"));
+        }
+    }
 public:
     shinobi(): file("Shinobi2"), platform("other") {
         #if defined(SHINOBI_WINDOWS)
@@ -75,54 +133,16 @@ public:
             throw missing_property("project");
         }
 
+        // default directory info
+        data["directory.source"] = ".";
+        data["directory.build"] = "bin";
+        data["directory.object"] = "obj";
+
         // parse type-independent defaults
-
-        if(json.has<js::Object>("compiler")) {
-            auto compiler = json.get<js::Object>("compiler");
-
-            if(!compiler.has<js::String>("name")) {
-                throw shinobi_error("missing 'name' sub-property of 'compiler'");
-            }
-
-            data["compiler.name"] = compiler.get<js::String>("name");
-
-            if(compiler.has<js::Array>("flags")) {
-                data["compiler.flags"] = prefix_list(compiler.get<js::Array>("flags"));
-            }
-        }
-
-        if(json.has<js::Object>("linker")) {
-            auto linker = json.get<js::Object>("linker");
-
-            if(linker.has<js::Array>("flags")) {
-                data["linker.flags"] = prefix_list(linker.get<js::Array>("flags"));
-            }
-
-            if(linker.has<js::Array>("libraries")) {
-                data["linker.libraries"] = prefix_list(linker.get<js::Array>("libraries"));
-            }
-
-            if(linker.has<js::Array>("library_paths")) {
-                data["linker.library_paths"] = prefix_list(linker.get<js::Array>("library_paths"));
-            }
-        }
-
-        if(json.has<js::Array>("include_paths")) {
-            data["include.paths"] = prefix_list(json.get<js::Array>("include_paths"));
-        }
-
-        if(json.has<js::Object>("directory")) {
-            auto directory = json.get<js::Object>("directory");
-            data["directory.source"] = directory.get<js::String>("source", ".");
-            data["directory.build"] = directory.get<js::String>("build", "bin");
-            data["directory.object"] = directory.get<js::String>("object", "obj");
-        }
-        else {
-            // default values
-            data["directory.source"] = ".";
-            data["directory.build"] = "bin";
-            data["directory.object"] = "obj";
-        }
+        parse_compiler(json);
+        parse_linker(json);
+        parse_directory(json);
+        parse_include(json);
 
         if(!json.has<js::String>("type")) {
             throw missing_property("type");
