@@ -102,6 +102,10 @@ public:
         return data.find(key)->second;
     }
 
+    bool in_database(const std::string& key) const noexcept {
+        return data.find(key) != data.end();
+    }
+
     template<typename T>
     const T& get(const std::string& key) const {
         return json.get<T>(key);
