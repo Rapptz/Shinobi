@@ -2,6 +2,7 @@
 #define UTIL_WRITER_HPP
 
 #include <boost/filesystem/path.hpp>
+#include <set>
 #include "ninja.hpp"
 #include "shinobi.hpp"
 
@@ -13,6 +14,7 @@ private:
     boost::filesystem::path source, object, build;
     boost::filesystem::path dir;
     void create_directories();
+    void fill_input();
 public:
     writer(std::ofstream&);
     void create();
