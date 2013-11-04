@@ -17,17 +17,17 @@ private:
     std::fstream file;
     std::map<std::string, std::string> data;
 
-    std::string join_json_list(const js::Array& arr, char delim = ' ') {
+    std::string prefix_list(const js::Array& arr, const std::string& prefix = std::string()) {
         std::ostringstream out;
         auto first = arr.values().cbegin();
         auto last = arr.values().cend();
 
         if(first != last) {
-            out << *(*first++);
+            out << prefix << *(*first++);
         }
 
         while(first != last) {
-            out << delim << *(*first++);
+            out << ' ' << prefix << *(*first++);
         }
         return out.str();
     }
@@ -52,7 +52,7 @@ public:
             data["compiler.name"] = compiler.get<js::String>("name");
 
             if(compiler.has<js::Array>("flags")) {
-                data["compiler.flags"] = join_json_list(compiler.get<js::Array>("flags"));
+                data["compiler.flags"] = prefix_list(compiler.get<js::Array>("flags"));
             }
         }
 
@@ -60,20 +60,20 @@ public:
             auto linker = json.get<js::Object>("linker");
 
             if(linker.has<js::Array>("flags")) {
-                data["linker.flags"] = join_json_list(linker.get<js::Array>("flags"));
+                data["linker.flags"] = prefix_list(linker.get<js::Array>("flags"));
             }
 
             if(linker.has<js::Array>("libraries")) {
-                data["linker.libraries"] = join_json_list(linker.get<js::Array>("libraries"));
+                data["linker.libraries"] = prefix_list(linker.get<js::Array>("libraries"));
             }
 
             if(linker.has<js::Array>("library_paths")) {
-                data["linker.library_paths"] = join_json_list(linker.get<js::Array>("library_paths"));
+                data["linker.library_paths"] = prefix_list(linker.get<js::Array>("library_paths"));
             }
         }
 
         if(json.has<js::Array>("include_paths")) {
-            data["include.paths"] = join_json_list(json.get<js::Array>("include_paths"));
+            data["include.paths"] = prefix_list(json.get<js::Array>("include_paths"));
         }
 
         if(json.has<js::Object>("directory")) {
