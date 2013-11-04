@@ -31,6 +31,32 @@ private:
         }
         return out.str();
     }
+
+    void parse_software() {
+        if(json.has<js::Object>("files")) {
+            auto files = json.get<js::Object>("files");
+
+            if(files.has<js::Array>("extra")) {
+                data["files.extra"] = prefix_list(files.get<js::Array>("extra"));
+            }
+            else {
+                data["files.extra"] = "";
+            }
+
+            if(files.has<js::Array>("ignored")) {
+                data["files.ignored"] = prefix_list(files.get<js::Array>("ignored"));
+            }
+
+            else {
+                data["files.ignored"] = "";
+            }
+
+        }
+        else {
+            data["files.extra"] = "";
+            data["files.ignored"] = "";
+        }
+    }
 public:
     shinobi(): file("Shinobi2") {}
 
@@ -91,6 +117,10 @@ public:
 
         if(!json.has<js::String>("type")) {
             throw missing_property("type");
+        }
+
+        if(json.get<js::String>("type") == "software") {
+            parse_software();
         }
     }
 
