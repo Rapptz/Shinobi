@@ -92,6 +92,7 @@ void writer::software_variables() {
     auto compiler = parser.database("compiler.name");
     file.variable("cxx", compiler);
     std::string compile_command("$cxx ");
+    std::string linker_command("$cxx ");
 
     if(compiler != "cl") {
         compile_command += "-MMD -MF $out.d ";
@@ -105,6 +106,27 @@ void writer::software_variables() {
             file.variable("incflag", parser.database("include.flags"));
             compile_command += " $incflag";
         }
+
+        linker_command += "$in -o $out";
+
+        if(parser.in_database("linker.flags")) {
+            file.variable("linkflags", parser.database("linker.flags"));
+            linker_command += " $linkflags";
+        }
+
+        if(parser.in_database("linker.library_paths")) {
+            file.variable("libpaths", parser.database("linker.library_paths"));
+            linker_command += " $libpaths";
+        }
+
+        if(parser.in_database("linker.libraries")) {
+            file.variable("libs", parser.database("linker.libraries"));
+            linker_command += " $libs";
+        }
+
+        file.newline();
+        file.rule("compile", compile_command, "deps = gcc", "depfile = $out.d", "description = Building $in to $out");
+        file.rule("link", linker_command, "description = Creating $out");
     }
 }
 
