@@ -9,8 +9,10 @@ void make_default_shinobi() {
     std::ofstream out("Shinobi2");
     out << 
 R"shin({
-    "project": "untitled",
-    "type": "software",
+    "project": {
+        "name": "untitled",
+        "type": "software"
+    }
 
     "compiler": {
         "name": "g++",
@@ -47,6 +49,23 @@ bool extension_is(const std::string& str, T&& t, Args&&... args) {
     return ends_with(str, std::forward<T>(t)) || extension_is(str, std::forward<Args>(args)...);
 }
 
+template<typename Cont>
+std::string flatten_list(const Cont& c) {
+    std::ostringstream ss;
+    auto first = c.cbegin();
+    auto last = c.cend();
+
+    if(first != last) {
+        ss << *first++;
+    }
+
+    while(first != last) {
+        ss << ' ' << *first++;
+    }
+
+    return ss.str();
+}
+
 std::string sanitise(const fs::path& p) noexcept {
     // Remove ./
     auto result = p.string();
@@ -63,7 +82,7 @@ std::string sanitise(const fs::path& p) noexcept {
     return result;
 }
 
-writer::writer(std::fstream& out): file(out), dir(fs::current_path()) {
+writer::writer(std::ofstream& out): file(out), dir(fs::current_path()) {
     if(!parser.is_open()) {
         make_default_shinobi();
         parser.reopen();
@@ -132,6 +151,27 @@ void writer::software_variables() {
 
 void writer::create_software_file() {
     software_variables();
+
+    auto compiler = parser.database("compiler.name");
+
+    // Generate build sequence
+    for(auto&& p : input) {
+        auto directory = dir / object / p;
+        if(fs::exists(directory.parent_path())) {
+            fs::create_directories(directory.parent_path());
+        }
+
+        if(compiler != "cl") {
+            auto output_file = "$objdir/" + sanitise(fs::path(p).replace_extension(".o"));
+            output.insert(output_file);
+            file.build(output_file, p, "compile");   
+        }
+    }
+
+    auto name = parser.database("project.name");
+
+    // Generate link sequence
+    file.build("$builddir/" + name, flatten_list(output), "link");
 }
 
 void writer::fill_input() {

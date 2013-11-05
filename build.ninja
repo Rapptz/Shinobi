@@ -6,7 +6,7 @@ cxxflags = -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2
 incflags = -I. -Ijsonxx
 ldflags = -static
 libpath = 
-libs = 
+libs = -lboost_system -lboost_filesystem
 def = -DNDEBUG
 
 rule compile
@@ -21,7 +21,9 @@ rule link
 
 build $objdir/jsonxx/jsonxx.o: compile jsonxx/jsonxx.cc
 
+build $objdir/util/writer.o: compile util/writer.cpp
+
 build $objdir/main.o: compile main.cpp
 
-build $builddir/shinobi: link $objdir/jsonxx/jsonxx.o $objdir/main.o
+build $builddir/shinobi: link $objdir/jsonxx/jsonxx.o $objdir/util/writer.o $objdir/main.o
 

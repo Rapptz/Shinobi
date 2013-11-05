@@ -11,6 +11,8 @@ struct writer {
 private:
     ninja file;
     shinobi parser;
+    std::set<std::string> input;
+    std::set<std::string> output;
     boost::filesystem::path source, object, build;
     boost::filesystem::path dir;
     void create_directories();

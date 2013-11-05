@@ -199,11 +199,11 @@ public:
     }
 
     bool is_library() const {
-        return file.find("project.type")->second == "library";
+        return data.find("project.type")->second == "library";
     }
 
     bool is_software() const {
-        return file.find("project.type")->second == "software";
+        return data.find("project.type")->second == "software";
     }
 
     void reopen() noexcept {
