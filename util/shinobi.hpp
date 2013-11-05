@@ -141,9 +141,20 @@ public:
 
     void parse() {
         json.parse(file);
-        if(!json.has<js::String>("project")) {
+
+        // required settings
+        if(!json.has<js::Object>("project")) {
             throw missing_property("project");
         }
+
+        auto project = json.get<js::Object>("project");
+        data["project.name"] = project.get<js::String>("name", "untitled");
+
+        if(!project.has<js::String>("type")) {
+            throw missing_property("type");
+        }
+
+        data["project.type"] = project.get<js::String>("type");
 
         // default directory info
         data["directory.source"] = ".";
@@ -155,10 +166,6 @@ public:
         parse_linker(json);
         parse_directory(json);
         parse_include(json);
-
-        if(!json.has<js::String>("type")) {
-            throw missing_property("type");
-        }
 
         if(json.get<js::String>("type") == "software") {
             parse_software();
@@ -192,11 +199,11 @@ public:
     }
 
     bool is_library() const {
-        return file.find("type")->second == "library";
+        return file.find("project.type")->second == "library";
     }
 
     bool is_software() const {
-        return file.find("type")->second == "software";
+        return file.find("project.type")->second == "software";
     }
 
     void reopen() noexcept {

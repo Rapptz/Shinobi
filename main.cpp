@@ -5,8 +5,10 @@ void make_default_shinobi() {
     std::ofstream out("Shinobi2");
     out << 
 R"shin({
-    "project": "untitled",
-    "type": "software",
+    "project": {
+        "name": "untitled",
+        "type": "software"
+    },
 
     "compiler": {
         "name": "g++",
