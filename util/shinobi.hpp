@@ -41,22 +41,10 @@ private:
             if(files.has<js::Array>("extra")) {
                 data["files.extra"] = prefix_list(files.get<js::Array>("extra"));
             }
-            else {
-                data["files.extra"] = "";
-            }
 
             if(files.has<js::Array>("ignored")) {
                 data["files.ignored"] = prefix_list(files.get<js::Array>("ignored"));
             }
-
-            else {
-                data["files.ignored"] = "";
-            }
-
-        }
-        else {
-            data["files.extra"] = "";
-            data["files.ignored"] = "";
         }
     }
 
@@ -141,6 +129,7 @@ public:
 
     void parse() {
         json.parse(file);
+        file.unsetf(std::ios::hex);
 
         // required settings
         if(!json.has<js::Object>("project")) {
@@ -161,13 +150,17 @@ public:
         data["directory.build"] = "bin";
         data["directory.object"] = "obj";
 
+        // default file info
+        data["file.extra"] = "";
+        data["file.ignored"] = "";
+
         // parse type-independent defaults
         parse_compiler(json);
         parse_linker(json);
         parse_directory(json);
         parse_include(json);
 
-        if(json.get<js::String>("type") == "software") {
+        if(project.get<js::String>("type") == "software") {
             parse_software();
         }
     }
