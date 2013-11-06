@@ -89,6 +89,11 @@ public:
         insert_line("build " + output + ": " + rule + ' ' + input);
         return *this;
     }
+
+    ninja& set_default(const std::string& input, bool is_phony = false) {
+        insert_line(std::string("default") + (is_phony ? " phony " : " ") + input);
+        return *this;
+    }
 };
 
 } // util

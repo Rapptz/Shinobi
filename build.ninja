@@ -23,3 +23,7 @@ build $objdir/util/writer.o: compile util/writer.cpp
 
 build $builddir/shinobi: link $objdir/jsonxx/jsonxx.o $objdir/main.o $
     $objdir/util/writer.o
+
+build install: phony $builddir/shinobi
+
+default install

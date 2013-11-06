@@ -194,6 +194,10 @@ void writer::create_software_file() {
     file.newline();
     // Generate link sequence
     file.build("$builddir/" + name, flatten_list(output), "link");
+    file.newline();
+    file.build("install", "$builddir/" + name, "phony");
+    file.newline();
+    file.set_default("install");
 }
 
 void writer::fill_input() {
