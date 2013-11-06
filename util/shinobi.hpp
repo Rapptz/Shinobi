@@ -129,7 +129,7 @@ private:
         }
     }
 public:
-    shinobi(): file("Shinobi2"), platform("other"), compiler("g++") {
+    shinobi(): file("Shinobi2"), platform("other") {
         #if defined(SHINOBI_WINDOWS)
         platform = "windows";
         #elif defined(SHINOBI_LINUX)
@@ -140,7 +140,10 @@ public:
     }
 
     void parse() {
-        json.parse(file);
+        if(!json.parse(file)) {
+            throw shinobi_error("unable to parse file");
+        }
+
         file.unsetf(std::ios::hex);
 
         // required settings
