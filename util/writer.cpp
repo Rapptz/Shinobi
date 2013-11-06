@@ -1,5 +1,6 @@
 #include <boost/filesystem.hpp>
 #include <utility>
+#include <vector>
 #include "writer.hpp"
 
 namespace fs = boost::filesystem;
@@ -228,6 +229,36 @@ void writer::fill_input() {
     }
 }
 
+void writer::create_library_file() {
+    general_variables();
+    std::vector<std::string> library_names;
+    for(unsigned i = 0; i < parser.library_count(); ++i) {
+        parser.parse_library(index);
+        input.clear();
+        fill_input();
+        create_directories();
+        build_sequence();
+
+        // link sequences
+        file.newline();
+        std::string builddir;
+
+        if(parser.compile_name() != "cl") {
+            builddir = "$builddir/lib" + parser.library_name(i) + ".a";
+        }
+
+        file.build(builddir, flatten_list(output), "link");
+        file.newline();
+        file.build(parser.library_name(i), builddir, "phony");
+        library_names.push_back(builddir);
+        file.newline();
+    }
+
+    file.build("all", flatten_list(library_names), "phony");
+    file.newline();
+    file.set_default("all");
+}
+
 void writer::debug(bool b) {
     if(b) {
         parser.enable_debug();
@@ -239,10 +270,13 @@ void writer::debug(bool b) {
 
 void writer::create() {
     parser.parse();
-    create_directories();
-    fill_input();
 
     if(parser.is_software()) {
+        create_directories();
+        fill_input();
         create_software_file();
+    }
+    else if(parser.is_library()) {
+        create_library_file();
     }
 }

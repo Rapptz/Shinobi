@@ -17,6 +17,7 @@ private:
     boost::filesystem::path dir;
     void create_directories();
     void create_software_file();
+    void create_library_file();
     void general_variables();
     void fill_input();
     void build_sequence();
