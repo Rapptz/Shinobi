@@ -222,6 +222,15 @@ void writer::fill_input() {
     }
 }
 
+void writer::debug(bool b) {
+    if(b) {
+        parser.enable_debug();
+    }
+    else {
+        parser.disable_debug();
+    }
+}
+
 void writer::create() {
     parser.parse();
     create_directories();

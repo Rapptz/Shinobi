@@ -22,6 +22,7 @@ private:
 public:
     writer(std::ofstream&);
     void create();
+    void debug(bool);
 };
 } // util
 

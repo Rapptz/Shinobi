@@ -18,6 +18,7 @@ private:
     std::map<std::string, std::string> data;
     std::string platform;
     std::string compiler;
+    bool debug;
 
     void erase_all(std::string& str, const std::string& erase) {
         size_t start_pos = 0;
@@ -143,7 +144,7 @@ private:
         }
     }
 public:
-    shinobi(): file("Shinobi2"), platform("other") {
+    shinobi(): file("Shinobi2"), platform("other"), debug(false) {
         #if defined(SHINOBI_WINDOWS)
         platform = "windows";
         #elif defined(SHINOBI_LINUX)
@@ -195,6 +196,10 @@ public:
 
         parse_subtree(json, platform);
 
+        if(debug) {
+            parse_subtree(json, "debug");
+        }
+
         if(compiler.empty()) {
             throw shinobi_error("no compiler name provided");
         }
@@ -233,6 +238,14 @@ public:
 
     bool is_software() const {
         return data.find("project.type")->second == "software";
+    }
+
+    void enable_debug() {
+        debug = true;
+    }
+
+    void disable_debug() {
+        debug = false;
     }
 
     void reopen() noexcept {
