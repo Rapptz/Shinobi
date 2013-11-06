@@ -47,9 +47,9 @@ private:
         return out.str();
     }
 
-    void parse_software() {
-        if(json.has<js::Object>("files")) {
-            auto files = json.get<js::Object>("files");
+    void parse_software(const js::Object& o) {
+        if(o.has<js::Object>("files")) {
+            auto files = o.get<js::Object>("files");
 
             if(files.has<js::Array>("extra")) {
                 data["files.extra"] = prefix_list(files.get<js::Array>("extra"));
@@ -130,24 +130,28 @@ private:
         }
     }
 
+    void parse_helper(const js::Object& o) {
+        parse_compiler(o);
+        parse_linker(o);
+        parse_include(o);
+        parse_directory(o);
+
+        if(is_software()) {
+            parse_software(o);
+        }
+
+        if(debug) {
+            parse_subtree(o, "debug");
+        }
+        else {
+            parse_subtree(o, "release");
+        }
+    }
+
     void parse_subtree(const js::Object& o, const std::string& str) {
         if(o.has<js::Object>(str)) {
             auto sub = o.get<js::Object>(str);
-            parse_compiler(sub);
-            parse_linker(sub);
-            parse_include(sub);
-            parse_directory(sub);
-
-            if(is_software()) {
-                parse_software();
-            }
-
-            if(debug) {
-                parse_subtree(json, "debug");
-            }
-            else {
-                parse_subtree(json, "release");
-            }
+            parse_helper(sub);
         }
     }
 public:
@@ -174,12 +178,12 @@ public:
         }
 
         auto project = json.get<js::Object>("project");
-        data["project.name"] = project.get<js::String>("name", "untitled");
-
         if(!project.has<js::String>("type")) {
             throw missing_property("type");
         }
 
+        // required project info
+        data["project.name"] = project.get<js::String>("name", "untitled");
         data["project.type"] = project.get<js::String>("type");
 
         // default directory info
@@ -191,24 +195,8 @@ public:
         data["files.extra"] = "";
         data["files.ignored"] = "";
 
-        // parse type-independent defaults
-        parse_compiler(json);
-        parse_linker(json);
-        parse_directory(json);
-        parse_include(json);
-
-        if(project.get<js::String>("type") == "software") {
-            parse_software();
-        }
-
+        parse_helper(json);
         parse_subtree(json, platform);
-
-        if(debug) {
-            parse_subtree(json, "debug");
-        }
-        else {
-            parse_subtree(json, "release");
-        }
 
         if(compiler.empty()) {
             throw shinobi_error("no compiler name provided");

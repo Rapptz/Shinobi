@@ -2,28 +2,24 @@ ninja_required_version = 1.3
 builddir = bin
 objdir = obj
 cxx = g++
-cxxflags = -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2
-incflags = -I. -Ijsonxx
-ldflags = -static
-libpath = 
+cxxflags = -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2 -DNDEBUG
+incflag = -I"."
+linkflags = -static
 libs = -lboost_system -lboost_filesystem
-def = -DNDEBUG
 
 rule compile
-    deps = gcc
-    depfile = $out.d
-    command = $cxx -MMD -MF $out.d $cxxflags $def -c $in -o $out $incflags
-    description = Building $in to $out
+  command = $cxx -MMD -MF $out.d $cxxflags -c $in -o $out $incflag
+  deps = gcc
+  depfile = $out.d
+  description = Building $in to $out
 
 rule link
-    command = $cxx $in -o $out $ldflags $libpath $libs
-    description = Linking $out
+  command = $cxx $in -o $out $linkflags $libs
+  description = Creating $out
 
 build $objdir/jsonxx/jsonxx.o: compile jsonxx/jsonxx.cc
-
+build $objdir/main.o: compile main.cpp
 build $objdir/util/writer.o: compile util/writer.cpp
 
-build $objdir/main.o: compile main.cpp
-
-build $builddir/shinobi: link $objdir/jsonxx/jsonxx.o $objdir/util/writer.o $objdir/main.o
-
+build $builddir/shinobi: link $objdir/jsonxx/jsonxx.o $objdir/main.o $
+    $objdir/util/writer.o
