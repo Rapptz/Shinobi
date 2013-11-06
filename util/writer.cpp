@@ -79,6 +79,14 @@ std::string sanitise(const fs::path& p) noexcept {
     }
 
     result.replace(pos, 2, "");
+
+    // Replace all \ with /
+    pos = 0;
+    while((pos = result.find('\\', pos)) != std::string::npos) {
+        result[pos] = '/';
+        ++pos;
+    }
+
     return result;
 }
 
