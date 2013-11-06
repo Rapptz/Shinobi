@@ -38,13 +38,20 @@ private:
             delim[0] = ' ';
         }
 
-        if(sanitise) {
-            std::string temp = out.str();
-            erase_all(temp, "\"");
-            return temp;
+        std::string result = out.str();
+
+        // un-escape \/ to /
+        size_t pos = 0;
+        while((pos = result.find("\\/", pos)) != std::string::npos) {
+            result.replace(pos, 2, "/");
         }
 
-        return out.str();
+        if(sanitise) {
+            erase_all(result, "\"");
+            return result;
+        }
+
+        return result;
     }
 
     void parse_software(const js::Object& o) {
