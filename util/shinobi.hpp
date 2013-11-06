@@ -14,6 +14,7 @@ namespace js = jsonxx;
 struct shinobi {
 private:
     js::Object json;
+    js::Array libraries;
     std::fstream file;
     std::map<std::string, std::string> data;
     std::string platform;
@@ -153,6 +154,8 @@ private:
         else {
             parse_subtree(o, "release");
         }
+
+        parse_subtree(o, platform);
     }
 
     void parse_subtree(const js::Object& o, const std::string& str) {
@@ -203,7 +206,13 @@ public:
         data["files.ignored"] = "";
 
         parse_helper(json);
-        parse_subtree(json, platform);
+
+        if(is_library() && !json.has<js::Array>("libraries")) {
+            throw missing_property("libraries");
+        }
+        else {
+            libraries = json.get<js::Array>("libraries");
+        }
 
         if(compiler.empty()) {
             throw shinobi_error("no compiler name provided");
@@ -247,6 +256,29 @@ public:
 
     bool is_software() const {
         return data.find("project.type")->second == "software";
+    }
+
+    auto library_count() const -> decltype(libraries.size()) {
+        return libraries.size();
+    }
+
+    void parse_library(unsigned index) {
+        // parses library on the fly
+        if(!libraries.has<js::Object>(index)) {
+            throw shinobi_error("unable to retrieve library at index " + std::to_string(index));
+        }
+
+        auto lib = libraries.get<js::Object>(index);
+
+        if(!lib.has<js::String>("name")) {
+            throw no_library_name(index);
+        }
+
+        parse_helper(lib);
+    }
+
+    std::string library_name(unsigned index) {
+        return libraries.get<js::Object>(index).get<js::String>("name");
     }
 
     void enable_debug() {
