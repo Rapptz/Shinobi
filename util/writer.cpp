@@ -140,8 +140,8 @@ void writer::software_variables() {
         }
 
         compile_command += "-c $in -o $out";
-        if(parser.in_database("include.flags")) {
-            file.variable("incflag", parser.database("include.flags"));
+        if(parser.in_database("include.paths")) {
+            file.variable("incflag", parser.database("include.paths"));
             compile_command += " $incflag";
         }
 
