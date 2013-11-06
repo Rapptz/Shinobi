@@ -172,11 +172,7 @@ void writer::general_variables() {
     }
 }
 
-void writer::create_software_file() {
-    general_variables();
-
-    auto compiler = parser.database("compiler.name");
-
+void writer::build_sequence() {
     // Generate build sequence
     for(auto&& p : input) {
         auto directory = dir / object / p;
@@ -184,13 +180,17 @@ void writer::create_software_file() {
             fs::create_directories(directory.parent_path());
         }
 
-        if(compiler != "cl") {
+        if(parser.compile_name() != "cl") {
             auto output_file = "$objdir/" + sanitise(fs::path(p).replace_extension(".o"));
             output.insert(output_file);
             file.build(output_file, p, "compile");   
         }
     }
+}
 
+void writer::create_software_file() {
+    general_variables();
+    build_sequence();
     auto name = parser.database("project.name");
 
     file.newline();

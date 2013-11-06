@@ -19,6 +19,7 @@ private:
     void create_software_file();
     void general_variables();
     void fill_input();
+    void build_sequence();
 public:
     writer(std::ofstream&);
     void create();
