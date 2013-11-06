@@ -12,7 +12,7 @@ R"shin({
     "project": {
         "name": "untitled",
         "type": "software"
-    }
+    },
 
     "compiler": {
         "name": "g++",
@@ -26,7 +26,7 @@ R"shin({
     "include_paths": ["."],
 
     "directory": {
-        "source": "src",
+        "source": ".",
         "build": "bin",
         "object": "obj"
     }
@@ -145,7 +145,9 @@ void writer::software_variables() {
 
         file.newline();
         file.rule("compile", compile_command, "deps = gcc", "depfile = $out.d", "description = Building $in to $out");
+        file.newline();
         file.rule("link", linker_command, "description = Creating $out");
+        file.newline();
     }
 }
 
