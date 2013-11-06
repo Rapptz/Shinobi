@@ -143,8 +143,8 @@ void writer::general_variables() {
 
         compile_command += "-c $in -o $out";
         if(parser.in_database("include.paths")) {
-            file.variable("incflag", parser.database("include.paths"));
-            compile_command += " $incflag";
+            file.variable("incflags", parser.database("include.paths"));
+            compile_command += " $incflags";
         }
 
         linker_command += "$in -o $out";
