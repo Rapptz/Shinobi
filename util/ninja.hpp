@@ -65,6 +65,11 @@ public:
         return *this;
     }
 
+    ninja& comment(const std::string& text) {
+        out << "# " << text << '\n';
+        return *this;
+    }
+
     ninja& variable(const std::string& name, const std::string& value, unsigned indent = 0) {
         if(value.empty())
             return *this;
