@@ -19,18 +19,30 @@ private:
     std::string platform;
     std::string compiler;
 
-    std::string prefix_list(const js::Array& arr, const std::string& prefix = std::string()) {
+    void erase_all(std::string& str, const std::string& erase) {
+        size_t start_pos = 0;
+        while((start_pos = str.find(erase, start_pos)) != std::string::npos) {
+            str.replace(start_pos, erase.length(), "");
+        }
+    }
+
+    std::string prefix_list(const js::Array& arr, bool sanitise = false, const std::string& prefix = std::string()) {
         std::ostringstream out;
         auto first = arr.values().cbegin();
         auto last = arr.values().cend();
-
-        if(first != last) {
-            out << prefix << *(*first++);
-        }
+        char delim[2] = {'\0', '\0'};
 
         while(first != last) {
-            out << ' ' << prefix << *(*first++);
+            out << delim << prefix << *(*first++);
+            delim[0] = ' ';
         }
+
+        if(sanitise) {
+            std::string temp = out.str();
+            erase_all(temp, "\"");
+            return temp;
+        }
+
         return out.str();
     }
 
@@ -60,7 +72,7 @@ private:
             data["compiler.name"] = compiler;
 
             if(comp.has<js::Array>("flags")) {
-                data["compiler.flags"] = prefix_list(comp.get<js::Array>("flags"));
+                data["compiler.flags"] = prefix_list(comp.get<js::Array>("flags"), true);
             }
         }
     }
@@ -70,16 +82,16 @@ private:
             auto linker = o.get<js::Object>("linker");
 
             if(linker.has<js::Array>("flags")) {
-                data["linker.flags"] = prefix_list(linker.get<js::Array>("flags"));
+                data["linker.flags"] = prefix_list(linker.get<js::Array>("flags"), true);
             }
 
             if(linker.has<js::Array>("libraries")) {
-                data["linker.libraries"] = prefix_list(linker.get<js::Array>("libraries"));
+                data["linker.libraries"] = prefix_list(linker.get<js::Array>("libraries"), true);
             }
 
             if(linker.has<js::Array>("library_paths")) {
                 if(!compiler.empty() && compiler != "cl") {
-                    data["linker.library_paths"] = prefix_list(linker.get<js::Array>("library_paths"), "-L");
+                    data["linker.library_paths"] = prefix_list(linker.get<js::Array>("library_paths"), false, "-L");
                 }
                 else {
                     data["linker.library_paths"] = prefix_list(linker.get<js::Array>("library_paths"));
@@ -109,7 +121,7 @@ private:
     void parse_include(const js::Object& o) {
         if(o.has<js::Array>("include_paths")) {
             if(!compiler.empty() && compiler != "cl") {
-                data["include.paths"] = prefix_list(o.get<js::Array>("include_paths"), "-I");
+                data["include.paths"] = prefix_list(o.get<js::Array>("include_paths"), false, "-I");
             }
             else {
                 data["include.paths"] = prefix_list(o.get<js::Array>("include_paths"));
@@ -117,7 +129,7 @@ private:
         }
     }
 public:
-    shinobi(): file("Shinobi2"), platform("other") {
+    shinobi(): file("Shinobi2"), platform("other"), compiler("g++") {
         #if defined(SHINOBI_WINDOWS)
         platform = "windows";
         #elif defined(SHINOBI_LINUX)
@@ -165,11 +177,7 @@ public:
         }
     }
 
-    const std::string& database(const std::string& key) const {
-        return data.find(key)->second;
-    }
-
-    std::string& database(const std::string& key) {
+    std::string database(const std::string& key) const {
         return data.find(key)->second;
     }
 
