@@ -125,7 +125,7 @@ void writer::create_directories() {
     }
 }
 
-void writer::software_variables() {
+void writer::general_variables() {
     file.variable("builddir", parser.database("directory.build"));
     file.variable("objdir", parser.database("directory.object"));
     
@@ -173,7 +173,7 @@ void writer::software_variables() {
 }
 
 void writer::create_software_file() {
-    software_variables();
+    general_variables();
 
     auto compiler = parser.database("compiler.name");
 

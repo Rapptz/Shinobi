@@ -55,7 +55,7 @@ private:
         return result;
     }
 
-    void parse_software(const js::Object& o) {
+    void parse_files(const js::Object& o) {
         if(o.has<js::Object>("files")) {
             auto files = o.get<js::Object>("files");
 
@@ -143,10 +143,7 @@ private:
         parse_linker(o);
         parse_include(o);
         parse_directory(o);
-
-        if(is_software()) {
-            parse_software(o);
-        }
+        parse_files(o);
 
         if(debug) {
             parse_subtree(o, "debug");

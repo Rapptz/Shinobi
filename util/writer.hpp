@@ -17,7 +17,7 @@ private:
     boost::filesystem::path dir;
     void create_directories();
     void create_software_file();
-    void software_variables();
+    void general_variables();
     void fill_input();
 public:
     writer(std::ofstream&);
