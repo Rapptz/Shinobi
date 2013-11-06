@@ -207,10 +207,10 @@ public:
 
         parse_helper(json);
 
-        if(is_library() && !json.has<js::Array>("libraries")) {
-            throw missing_property("libraries");
-        }
-        else {
+        if(is_library()) {
+            if(!json.has<js::Array>("libraries")) {
+                throw missing_property("libraries");
+            }
             libraries = json.get<js::Array>("libraries");
         }
 
