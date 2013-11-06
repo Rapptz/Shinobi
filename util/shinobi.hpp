@@ -216,6 +216,10 @@ public:
         return compiler;
     }
 
+    const std::string& platform_name() const noexcept {
+        return platform;
+    }
+
     template<typename T>
     const T& get(const std::string& key) const {
         return json.get<T>(key);
