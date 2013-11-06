@@ -141,6 +141,13 @@ private:
             if(is_software()) {
                 parse_software();
             }
+
+            if(debug) {
+                parse_subtree(json, "debug");
+            }
+            else {
+                parse_subtree(json, "release");
+            }
         }
     }
 public:
@@ -198,6 +205,9 @@ public:
 
         if(debug) {
             parse_subtree(json, "debug");
+        }
+        else {
+            parse_subtree(json, "release");
         }
 
         if(compiler.empty()) {
