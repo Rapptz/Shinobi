@@ -128,6 +128,20 @@ private:
             }
         }
     }
+
+    void parse_subtree(const js::Object& o, const std::string& str) {
+        if(o.has<js::Object>(str)) {
+            auto sub = o.get<js::Object>(str);
+            parse_compiler(sub);
+            parse_linker(sub);
+            parse_include(sub);
+            parse_directory(sub);
+
+            if(is_software()) {
+                parse_software();
+            }
+        }
+    }
 public:
     shinobi(): file("Shinobi2"), platform("other") {
         #if defined(SHINOBI_WINDOWS)
@@ -177,6 +191,12 @@ public:
 
         if(project.get<js::String>("type") == "software") {
             parse_software();
+        }
+
+        parse_subtree(json, platform);
+
+        if(compiler.empty()) {
+            throw shinobi_error("no compiler name provided");
         }
     }
 
