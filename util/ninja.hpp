@@ -21,7 +21,7 @@ private:
     }
 
     void insert_line(std::string str, unsigned indent = 0) {
-        std::string leading_spaces(indent * 2, ' ');
+        std::string leading_spaces(indent * 4, ' ');
         auto space = std::string::npos;
 
         while(leading_spaces.size() + str.size() > width) {
