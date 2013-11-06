@@ -163,8 +163,8 @@ public:
         data["directory.object"] = "obj";
 
         // default file info
-        data["file.extra"] = "";
-        data["file.ignored"] = "";
+        data["files.extra"] = "";
+        data["files.ignored"] = "";
 
         // parse type-independent defaults
         parse_compiler(json);

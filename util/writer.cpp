@@ -66,6 +66,14 @@ std::string flatten_list(const Cont& c) {
     return ss.str();
 }
 
+void replace_all(std::string& str, const std::string& from, const std::string& to) {
+    size_t start_pos = 0;
+    while((start_pos = str.find(from, start_pos)) != std::string::npos) {
+        str.replace(start_pos, from.length(), to);
+        start_pos += to.length();
+    }
+}
+
 std::string sanitise(const fs::path& p) noexcept {
     // Remove ./
     auto result = p.string();
@@ -79,11 +87,15 @@ std::string sanitise(const fs::path& p) noexcept {
         result.replace(pos, 2, "");
     }
 
+    // un-escape all escaped /
+    replace_all(result, "\\/", "/");
+
     // Replace all \ with /
-    pos = 0;
-    while((pos = result.find('\\', pos)) != std::string::npos) {
-        result[pos] = '/';
-        ++pos;
+    replace_all(result, "\\", "/");
+
+    // annoying quotes
+    if(result.front() == '"' && result.back() == '"') {
+        return std::string(&result[1], &result[result.size() - 1]);
     }
 
     return result;
@@ -179,6 +191,7 @@ void writer::create_software_file() {
 
     auto name = parser.database("project.name");
 
+    file.newline();
     // Generate link sequence
     file.build("$builddir/" + name, flatten_list(output), "link");
 }
@@ -190,6 +203,21 @@ void writer::fill_input() {
         auto p = it->path();
         if(extension_is(p.string(), ".cpp", ".cxx", ".cc", ".c", ".c++")) {
             input.insert(sanitise(p));
+        }
+    }
+
+    if(parser.in_database("files.ignored")) {
+        std::stringstream ss(parser.database("files.ignored"));
+        for(std::string f; ss >> f; ) {
+            f = sanitise(fs::path(f));
+            input.erase(f);
+        }
+    }
+
+    if(parser.in_database("files.extra")) {
+        std::stringstream ss(parser.database("files.extra"));
+        for(std::string f; ss >> f; ) {
+            input.insert(sanitise(fs::path(f)));
         }
     }
 }
