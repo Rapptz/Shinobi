@@ -7,6 +7,7 @@
 void show_help() noexcept {
     std::cout << "usage: shinobi [options]\n\n";
     cmd_line("-h, --help", "shows this message and exits");
+    cmd_line("-v, --version", "shows the version and exits");
     cmd_line("-d, --debug", "creates a debug ninja file");
 }
 
@@ -19,6 +20,7 @@ void show_version() noexcept {
 
 int main(int argc, char* argv[]) {
     std::set<std::string> args(argv, argv + argc);
+    bool debug = false;
 
     try {
         if(args.count("-h") || args.count("--help")) {
@@ -29,12 +31,16 @@ int main(int argc, char* argv[]) {
             show_version();
             return 0;
         }
+        else if(args.count("-d") || args.count("--debug")) {
+            debug = true;
+        }
         else if(args.size() > 1) {
             throw util::shinobi_error("unrecognised command line option '" + std::string(argv[1]) + '\'');
         }
 
         std::ofstream out("build.ninja");
         util::writer result(out);
+        result.debug(debug);
         result.create();
     }
     catch(const std::exception& e) {
