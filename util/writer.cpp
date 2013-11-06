@@ -73,12 +73,11 @@ std::string sanitise(const fs::path& p) noexcept {
 
     if(pos == std::string::npos) {
         pos = result.find(".\\");
-        if(pos == std::string::npos) {
-            return result;
-        }
     }
 
-    result.replace(pos, 2, "");
+    if(pos != std::string::npos) {
+        result.replace(pos, 2, "");
+    }
 
     // Replace all \ with /
     pos = 0;
