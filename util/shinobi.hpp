@@ -177,12 +177,17 @@ public:
         }
     }
 
-    std::string database(const std::string& key) const {
+    const std::string& database(const std::string& key) const {
         return data.find(key)->second;
     }
 
     bool in_database(const std::string& key) const noexcept {
-        return data.find(key) != data.end();
+        auto it = data.find(key);
+        return it != data.end() && !it->second.empty();
+    }
+
+    const std::string& compiler_name() const noexcept {
+        return compiler;
     }
 
     template<typename T>
