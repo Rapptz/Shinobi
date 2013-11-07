@@ -168,7 +168,7 @@ public:
         #elif defined(SHINOBI_LINUX)
         platform = "linux";
         #elif defined(SHINOBI_MACOS)
-        platform = "mac";
+        platform = "osx";
         #endif
     }
 
