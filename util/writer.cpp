@@ -181,7 +181,7 @@ void writer::build_sequence() {
             fs::create_directories(directory.parent_path());
         }
 
-        if(parser.compile_name() != "cl") {
+        if(parser.compiler_name() != "cl") {
             auto output_file = "$objdir/" + sanitise(fs::path(p).replace_extension(".o"));
             output.insert(output_file);
             file.build(output_file, p, "compile");   
@@ -233,7 +233,7 @@ void writer::create_library_file() {
     general_variables();
     std::vector<std::string> library_names;
     for(unsigned i = 0; i < parser.library_count(); ++i) {
-        parser.parse_library(index);
+        parser.parse_library(i);
         input.clear();
         fill_input();
         create_directories();
@@ -243,7 +243,7 @@ void writer::create_library_file() {
         file.newline();
         std::string builddir;
 
-        if(parser.compile_name() != "cl") {
+        if(parser.compiler_name() != "cl") {
             builddir = "$builddir/lib" + parser.library_name(i) + ".a";
         }
 
