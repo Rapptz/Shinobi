@@ -21,6 +21,8 @@ private:
     }
 
     void insert_line(std::string str, unsigned indent = 0) {
+        if(str.empty())
+            return;
         std::string leading_spaces(indent * 4, ' ');
         auto space = std::string::npos;
 
@@ -79,19 +81,28 @@ public:
 
     template<typename... Args>
     ninja& rule(const std::string& name, const std::string& command, Args&&... args) {
-        std::string commands[sizeof...(args)] = { std::forward<Args>(args)... };
         insert_line("rule " + name);
         variable("command", command, 1);
 
-        for(auto&& arg : commands) {
-            insert_line(arg, 1);
+        if(sizeof...(Args)) {
+            std::string commands[sizeof...(Args) + 1] = { "", std::forward<Args>(args)... };
+            for(auto&& arg : commands) {
+                insert_line(arg, 1);
+            }
         }
 
         return *this;
     }
 
-    ninja& build(const std::string& output, const std::string& input, const std::string& rule) {
+    template<typename... Args>
+    ninja& build(const std::string& output, const std::string& input, const std::string& rule, Args&&... args) {
         insert_line("build " + output + ": " + rule + ' ' + input);
+        if(sizeof...(Args)) {
+            std::string commands[sizeof...(Args) + 1] = { "", std::forward<Args>(args)... };
+            for(auto&& arg : commands) {
+                insert_line(arg, 1);
+            }
+        }
         return *this;
     }
 
