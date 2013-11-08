@@ -19,6 +19,7 @@ private:
     void create_software_file();
     void create_library_file();
     void general_variables();
+    void library_variables();
     void fill_input();
     void build_sequence();
 public:

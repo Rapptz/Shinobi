@@ -295,7 +295,7 @@ public:
     }
 
     bool is_static_library(unsigned index) {
-        return libraries.get<js::Object>(index).get<bool>("static");
+        return libraries.get<js::Object>(index).get<bool>("static", true);
     }
 
     void enable_debug() {

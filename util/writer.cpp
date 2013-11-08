@@ -229,9 +229,23 @@ void writer::fill_input() {
     }
 }
 
+void writer::library_variables() {
+    if(parser.compiler_name() != "cl") {
+        file.variable("archive", parser.database("archive.name"));
+        std::string archive_command("$archive ");
+        archive_command.append(parser.database("archive.options"));
+        archive_command += " $out $in";
+        file.newline();
+        file.rule("static", archive_command, "description = Creating static library $out");
+        file.newline();
+    }
+}
+
 void writer::create_library_file() {
     general_variables();
+    library_variables();
     std::vector<std::string> library_names;
+
     for(unsigned i = 0; i < parser.library_count(); ++i) {
         parser.parse_library(i);
         input.clear();
@@ -241,13 +255,16 @@ void writer::create_library_file() {
 
         // link sequences
         file.newline();
-        std::string builddir;
+        std::string builddir("$builddir/");
 
-        if(parser.compiler_name() != "cl") {
-            builddir = "$builddir/lib" + parser.library_name(i) + ".a";
+        if(parser.is_static_library(i)) {
+            if(parser.compiler_name() != "cl") {
+                builddir += "lib" + parser.library_name(i) + ".a";
+            }
+
+            file.build(builddir, flatten_list(output), "static");
         }
 
-        file.build(builddir, flatten_list(output), "link");
         file.newline();
         file.build(parser.library_name(i), builddir, "phony");
         library_names.push_back(builddir);
