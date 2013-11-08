@@ -8,6 +8,7 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include <fstream>
 
 #include "jsonxx.h"
 
@@ -52,7 +53,7 @@ int main(int argc, const char **argv) {
         TEST(parse_string(input, value));
         TEST(value == "field1");
     }
-    if( !Strict )
+    if( Parser != Strict )
     {
         string teststr("'field1'");
         string value;
@@ -67,7 +68,7 @@ int main(int argc, const char **argv) {
         TEST(parse_string(input, value));
         TEST(value == "  field1");
     }
-    if( !Strict )
+    if( Parser != Strict )
     {
         string teststr("'  field1'");
         string value;
@@ -82,7 +83,7 @@ int main(int argc, const char **argv) {
         TEST(parse_string(input, value));
         TEST(value == "field1");
     }
-    if( !Strict )
+    if( Parser != Strict )
     {
         string teststr("  'field1'");
         string value;
@@ -187,7 +188,7 @@ int main(int argc, const char **argv) {
         stream << v;
         TEST(stream.str() == "\"field1\"");
     }
-    if( !Strict )
+    if( Parser != Strict )
     {
         string teststr("'field1'");
         istringstream input(teststr);
@@ -240,6 +241,8 @@ int main(int argc, const char **argv) {
         TEST(o.parse(input));
         TEST(o.has<String>("bar"));
         TEST(o.get<String>("bar") == "a\rb\nc\td");
+        TEST(o.has<Boolean>("foo"));
+        TEST(o.get<Boolean>("foo") == true);
     }
     {
         string teststr("[ ]");
@@ -303,7 +306,7 @@ int main(int argc, const char **argv) {
         TEST(o.get<Array>("list").get<String>(2, "test") == "test");
     }
 
-    if( !Strict )
+    if( Parser != Strict )
     {
         #define QUOTE(...) #__VA_ARGS__
         string input = QUOTE(
@@ -404,7 +407,7 @@ int main(int argc, const char **argv) {
 
     // UTF-8
     TEST_OBJECT( {"text":"は 2010/11/4 at 5:50 AM に 6'45\"/km のペースで 8.42 km を走りました http://go.nike.com/9rlcovd"} );
-
+    
     // Escaped UTF-8
     TEST_OBJECT( {"text":"\u3050\u3089\u307e\u3041\u3067\u3061\u3085\u306d\u2665\u304a\u306f\u3088\u3046\u3067\u3059\uff01"} );
 
@@ -428,13 +431,13 @@ int main(int argc, const char **argv) {
     TEST_OBJECT( {"":"bar"} );
 
     // Trailing commas (if permissive mode is enabled)
-    if( !jsonxx::Strict ) {
+    if( Parser != Strict ) {
         TEST_ARRAY( [ true, 42, 54.7, ] );
         TEST_OBJECT( { "hello": "world",} );
     }
 
     // Single-quoted strings (if permissive mode is enabled)
-    if( !jsonxx::Strict ) {
+    if( Parser != Strict ) {
         TEST_OBJECT( { 'single-quoted-strings': 'are "handy"' } );
     }
 
@@ -551,7 +554,7 @@ int main(int argc, const char **argv) {
         TEST( o.size() == 3 );
     }
 
-    if( !jsonxx::Strict )
+    if( Parser != Strict )
     {
         // C++ style comments test
         string teststr(
@@ -565,6 +568,17 @@ int main(int argc, const char **argv) {
        );
         jsonxx::Object o;
         TEST( o.parse(teststr) );
+    }
+
+    if( argc > 1 )
+    {
+        std::ifstream ifs( argv[1] );
+
+        if( ifs.good() ) {
+            TEST( jsonxx::validate(ifs) );            
+        } else {
+            cout << "Cant find '" << argv[1] << "'" << endl;
+        }
     }
 
     cout << "All tests ok." << endl;
