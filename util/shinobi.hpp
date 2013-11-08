@@ -138,12 +138,24 @@ private:
         }
     }
 
+    void parse_archive(const js::Object& o) {
+        if(o.has<js::Object>("archive")) {
+            auto ar = o.get<js::Object>("archive");
+            data["archive.name"] = ar.get<js::String>("name", "ar");
+            data["archive.options"] = ar.get<js::String>("options", "rcs");
+        }
+    }
+
     void parse_helper(const js::Object& o) {
         parse_compiler(o);
         parse_linker(o);
         parse_include(o);
         parse_directory(o);
         parse_files(o);
+
+        if(is_library()) {
+            parse_archive(o);
+        }
 
         if(debug) {
             parse_subtree(o, "debug");
@@ -201,6 +213,10 @@ public:
         // default file info
         data["files.extra"] = "";
         data["files.ignored"] = "";
+
+        // default archive info
+        data["archive.name"] = "ar";
+        data["archive.options"] = "rcs";
 
         parse_helper(json);
 
@@ -276,6 +292,10 @@ public:
 
     std::string library_name(unsigned index) {
         return libraries.get<js::Object>(index).get<js::String>("name");
+    }
+
+    bool is_static_library(unsigned index) {
+        return libraries.get<js::Object>(index).get<bool>("static");
     }
 
     void enable_debug() {
