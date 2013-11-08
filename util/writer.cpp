@@ -130,12 +130,11 @@ void writer::general_variables() {
     file.variable("builddir", parser.database("directory.build"));
     file.variable("objdir", parser.database("directory.object"));
     
-    auto compiler = parser.database("compiler.name");
-    file.variable("cxx", compiler);
+    file.variable("cxx", parser.compiler_name());
     std::string compile_command("$cxx ");
     std::string linker_command("$cxx ");
 
-    if(compiler != "cl") {
+    if(!parser.is_msvc()) {
         compile_command += "-MMD -MF $out.d ";
         if(parser.in_database("compiler.flags")) {
             auto cxxflags = parser.database("compiler.flags");
@@ -186,7 +185,7 @@ void writer::build_sequence() {
             fs::create_directories(directory.parent_path());
         }
 
-        if(parser.compiler_name() != "cl") {
+        if(!parser.is_msvc()) {
             auto output_file = "$objdir/" + sanitise(fs::path(p).replace_extension(".o"));
             output.insert(output_file);
             file.build(output_file, p, "compile");   
@@ -235,7 +234,7 @@ void writer::fill_input() {
 }
 
 void writer::library_variables() {
-    if(parser.compiler_name() != "cl") {
+    if(!parser.is_msvc()) {
         file.variable("archive", parser.database("archive.name"));
         std::string archive_command("$archive ");
         archive_command.append(parser.database("archive.options"));
@@ -263,7 +262,7 @@ void writer::create_library_file() {
         std::string builddir("$builddir/");
 
         if(parser.is_static_library(i)) {
-            if(parser.compiler_name() != "cl") {
+            if(!parser.is_msvc()) {
                 builddir += "lib" + parser.library_name(i) + ".a";
             }
 

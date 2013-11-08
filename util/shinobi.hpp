@@ -78,6 +78,11 @@ private:
             }
 
             compiler = comp.get<js::String>("name");
+
+            if(compiler == "msvc") {
+                compiler = "cl";
+            }
+
             data["compiler.name"] = compiler;
 
             if(comp.has<js::Array>("flags")) {
@@ -247,6 +252,10 @@ public:
 
     const std::string& platform_name() const noexcept {
         return platform;
+    }
+
+    bool is_msvc() const {
+        return compiler == "cl";
     }
 
     template<typename T>
