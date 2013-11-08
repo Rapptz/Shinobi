@@ -242,6 +242,8 @@ void writer::library_variables() {
         file.newline();
         file.rule("static", archive_command, "description = Creating static library $out");
         file.newline();
+        file.rule("shared", "$cxx -shared $extras -o $out $in");
+        file.newline();
     }
 }
 
@@ -267,6 +269,23 @@ void writer::create_library_file() {
             }
 
             file.build(builddir, flatten_list(output), "static");
+        }
+        else {
+            if(!parser.is_msvc()) {
+                #if defined(SHINOBI_WINDOWS)
+                #error "Unsupported";
+                #else
+                    auto version = parser.database("project.version");
+                    auto pos = version.find('.');
+                    if(pos == std::string::npos) {
+                        throw shinobi_error("invalid version specified '" + version + '\'');
+                    }
+                    auto libname = "lib" + parser.library_name(i) + ".so";
+                    auto subversion = libname + version.substr(0, pos);
+                    builddir += libname + '.' + parser.database("project.version");
+                    file.build(builddir, flatten_list(output), "shared", "extras = -Wl,-soname," + subversion);
+                #endif
+            }
         }
 
         file.newline();
