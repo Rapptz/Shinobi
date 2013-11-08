@@ -273,7 +273,10 @@ void writer::create_library_file() {
         else {
             if(!parser.is_msvc()) {
                 #if defined(SHINOBI_WINDOWS)
-                #error "Unsupported";
+                    builddir += parser.library_name(i) + ".dll";
+                    auto libname = "lib" + parser.library_name(i) + ".a";
+                    file.build(builddir, flatten_list(output), "shared",
+                         "extras = -Wl,--out-implib=" + libname + ",--export-all-symbols,--enable-auto-import");
                 #else
                     auto version = parser.database("project.version");
                     auto pos = version.find('.');
