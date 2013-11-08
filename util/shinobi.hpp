@@ -207,20 +207,21 @@ public:
         }
 
         // required project info
-        data["project.name"] = project.get<js::String>("name", "untitled");
-        data["project.type"] = project.get<js::String>("type");
+        data["project.name"]    = project.get<js::String>("name", "untitled");
+        data["project.type"]    = project.get<js::String>("type");
+        data["project.version"] = project.get<js::String>("version", "1.0.0");
 
         // default directory info
         data["directory.source"] = ".";
-        data["directory.build"] = "bin";
+        data["directory.build"]  = "bin";
         data["directory.object"] = "obj";
 
         // default file info
-        data["files.extra"] = "";
+        data["files.extra"]   = "";
         data["files.ignored"] = "";
 
         // default archive info
-        data["archive.name"] = "ar";
+        data["archive.name"]    = "ar";
         data["archive.options"] = "rcs";
 
         parse_helper(json);
