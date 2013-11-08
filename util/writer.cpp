@@ -138,7 +138,12 @@ void writer::general_variables() {
     if(compiler != "cl") {
         compile_command += "-MMD -MF $out.d ";
         if(parser.in_database("compiler.flags")) {
-            file.variable("cxxflags", parser.database("compiler.flags"));
+            auto cxxflags = parser.database("compiler.flags");
+            if(parser.is_library()) {
+                cxxflags += " -fPIC";
+            }
+
+            file.variable("cxxflags", cxxflags);
             compile_command += "$cxxflags ";
         }
 
