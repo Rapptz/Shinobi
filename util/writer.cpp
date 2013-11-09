@@ -238,8 +238,8 @@ void writer::fill_input() {
 
 void writer::library_variables() {
     if(!parser.is_msvc()) {
-        file.variable("archive", parser.database("archive.name"));
-        std::string archive_command("$archive ");
+        std::string archive_command(parser.database("archive.name"));
+        archive_command.push_back(' ');
         archive_command.append(parser.database("archive.options"));
         archive_command += " $out $in";
         file.newline();
