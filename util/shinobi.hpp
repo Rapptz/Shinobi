@@ -69,12 +69,12 @@ private:
         }
     }
 
-    void parse_compiler(const js::Object& o) {
+    void parse_compiler(const js::Object& o, const std::string& setting = "compiler.flags") {
         if(o.has<js::Object>(compiler)) {
             auto comp = o.get<js::Object>(compiler);
 
             if(comp.has<js::Array>("flags")) {
-                data["compiler.flags"] = prefix_list(comp.get<js::Array>("flags"), true);
+                data[setting] = prefix_list(comp.get<js::Array>("flags"), true);
             }
         }
         else if(compiler == "g++" || compiler == "clang++" || compiler == "clang" || compiler == "gcc") {
@@ -82,7 +82,7 @@ private:
                 auto comp = o.get<js::Object>("non-msvc");
 
                 if(comp.has<js::Array>("flags")) {
-                    data["compiler.flags"] = prefix_list(comp.get<js::Array>("flags"), true);
+                    data[setting] = prefix_list(comp.get<js::Array>("flags"), true);
                 }
             }
         }
@@ -92,16 +92,14 @@ private:
         if(o.has<js::Object>("linker")) {
             auto linker = o.get<js::Object>("linker");
 
-            if(linker.has<js::Array>("flags")) {
-                data["linker.flags"] = prefix_list(linker.get<js::Array>("flags"), true);
-            }
+            parse_compiler(linker, "linker.flags");
 
             if(linker.has<js::Array>("libraries")) {
                 data["linker.libraries"] = prefix_list(linker.get<js::Array>("libraries"), true);
             }
 
             if(linker.has<js::Array>("library_paths")) {
-                if(!compiler.empty() && compiler != "cl") {
+                if(!compiler.empty() && compiler != "msvc") {
                     data["linker.library_paths"] = prefix_list(linker.get<js::Array>("library_paths"), false, "-L");
                 }
                 else {
@@ -135,7 +133,7 @@ private:
 
     void parse_include(const js::Object& o) {
         if(o.has<js::Array>("include_paths")) {
-            if(!compiler.empty() && compiler != "cl") {
+            if(!compiler.empty() && compiler != "msvc") {
                 data["include.paths"] = prefix_list(o.get<js::Array>("include_paths"), false, "-I");
             }
             else {
@@ -263,7 +261,7 @@ public:
     }
 
     bool is_msvc() const {
-        return compiler == "cl";
+        return compiler == "msvc";
     }
 
     template<typename T>
