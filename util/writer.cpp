@@ -138,9 +138,12 @@ void writer::general_variables() {
         compile_command += "-MMD -MF $out.d ";
         if(parser.in_database("compiler.flags")) {
             auto cxxflags = parser.database("compiler.flags");
+
+            #if defined(SHINOBI_LINUX)
             if(parser.is_library()) {
                 cxxflags += " -fPIC";
             }
+            #endif // linux specific
 
             file.variable("cxxflags", cxxflags);
             compile_command += "$cxxflags ";
