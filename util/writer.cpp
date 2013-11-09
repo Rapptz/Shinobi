@@ -315,6 +315,10 @@ void writer::debug(bool b) {
     }
 }
 
+void writer::compiler(const std::string& name) {
+    parser.compiler_name(name);
+}
+
 void writer::create() {
     parser.parse();
 

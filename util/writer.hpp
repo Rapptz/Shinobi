@@ -26,6 +26,7 @@ public:
     writer(std::ofstream&);
     void create();
     void debug(bool);
+    void compiler(const std::string&);
 };
 } // util
 

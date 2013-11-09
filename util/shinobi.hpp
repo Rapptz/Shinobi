@@ -70,23 +70,20 @@ private:
     }
 
     void parse_compiler(const js::Object& o) {
-        if(o.has<js::Object>("compiler")) {
-            auto comp = o.get<js::Object>("compiler");
-
-            if(!comp.has<js::String>("name")) {
-                throw shinobi_error("missing 'name' sub-property of 'compiler'");
-            }
-
-            compiler = comp.get<js::String>("name");
-
-            if(compiler == "msvc") {
-                compiler = "cl";
-            }
-
-            data["compiler.name"] = compiler;
+        if(o.has<js::Object>(compiler)) {
+            auto comp = o.get<js::Object>(compiler);
 
             if(comp.has<js::Array>("flags")) {
                 data["compiler.flags"] = prefix_list(comp.get<js::Array>("flags"), true);
+            }
+        }
+        else if(compiler == "g++" || compiler == "clang++" || compiler == "clang" || compiler == "gcc") {
+            if(o.has<js::Object>("non-msvc")) {
+                auto comp = o.get<js::Object>("non-msvc");
+
+                if(comp.has<js::Array>("flags")) {
+                    data["compiler.flags"] = prefix_list(comp.get<js::Array>("flags"), true);
+                }
             }
         }
     }
@@ -249,6 +246,11 @@ public:
 
     const std::string& compiler_name() const noexcept {
         return compiler;
+    }
+
+    shinobi& compiler_name(std::string str) noexcept {
+        compiler = std::move(str);
+        return *this;
     }
 
     const std::string& platform_name() const noexcept {
