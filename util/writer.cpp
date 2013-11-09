@@ -258,6 +258,7 @@ void writer::create_library_file() {
     for(unsigned i = 0; i < parser.library_count(); ++i) {
         parser.parse_library(i);
         input.clear();
+        output.clear();
         fill_input();
         create_directories();
         build_sequence();
