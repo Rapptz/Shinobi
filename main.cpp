@@ -16,7 +16,8 @@ int main(int argc, char* argv[]) {
     cli::parser po = {
         {"help", "shows this message and exits", 'h'},
         {"version", "shows the version and exits", 'v'},
-        {"debug", "creates a debug ninja file", 'd'}
+        {"debug", "creates a debug ninja file", 'd'},
+        {"compiler", "specify compiler to target", 'c', "name", "g++"}
     };
 
     po.name("shinobi");
@@ -37,6 +38,7 @@ int main(int argc, char* argv[]) {
         std::ofstream out("build.ninja");
         util::writer result(out);
         result.debug(po.is_active("debug"));
+        result.compiler(po.get<std::string>("compiler"));
         result.create();
     }
     catch(const std::exception& e) {
