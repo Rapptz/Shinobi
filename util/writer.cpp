@@ -245,7 +245,7 @@ void writer::library_variables() {
         file.newline();
         file.rule("static", archive_command, "description = Creating static library $out");
         file.newline();
-        file.rule("shared", "$cxx -shared $extras -o $out $in");
+        file.rule("shared", "$cxx -shared $extras -o $out $in", "description = Creating shared library $out");
         file.newline();
     }
 }
