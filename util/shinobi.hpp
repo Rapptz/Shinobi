@@ -233,8 +233,8 @@ public:
             libraries = json.get<js::Array>("libraries");
         }
 
-        if(compiler.empty()) {
-            throw shinobi_error("no compiler name provided");
+        if(compiler == "msvc") {
+            compiler = "cl";
         }
     }
 

@@ -196,9 +196,49 @@ void writer::general_variables() {
         }
 
         file.newline();
-        file.rule("compile", compile_command, "deps = gcc", "depfile = $out.d", "description = Building $in to $out");
+        file.rule("compile", compile_command, "deps = gcc", "depfile = $out.d", "description = Compiling $in");
         file.newline();
         file.rule("link", linker_command, "description = Creating $out");
+        file.newline();
+    }
+    else {
+        compile_command += "/nologo /showIncludes";
+
+        if(parser.in_database("include.paths")) {
+            file.variable("incflags", parser.database("include.paths"));
+            compile_command += " $incflags";
+        }
+
+        if(parser.in_database("compiler.flags")) {
+            auto cxxflags = parser.database("compiler.flags");
+            file.variable("cxxflags", cxxflags);
+            compile_command += " $cxxflags";
+        }
+
+        compile_command += " /c /Fo$out $in";
+        linker_command += "/link /nologo /out:$out";
+
+        if(parser.in_database("linker.flags")) {
+            file.variable("linkflags", parser.database("linker.flags"));
+            linker_command += " $linkflags";
+        }
+
+        if(parser.in_database("linker.library_paths")) {
+            file.variable("libpaths", parser.database("linker.library_paths"));
+            linker_command += " $libpaths";
+        }
+
+        if(parser.in_database("linker.libraries")) {
+            file.variable("libs", parser.database("linker.libraries"));
+            linker_command += " $libs";
+        }
+
+        linker_command += " @out.rsp";
+
+        file.newline();
+        file.rule("compile", compile_command, "deps = msvc", "description = Compiling $in");
+        file.newline();
+        file.rule("link", linker_command, "rspfile = $out.rsp", "rspfile_contents = $in", "description = Creating $out");
         file.newline();
     }
 }
