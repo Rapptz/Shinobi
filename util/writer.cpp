@@ -19,7 +19,7 @@ R"shin({
         "non-msvc": {
             "flags": ["-static"]
         }
-    }
+    },
 
     "release": {
         "non-msvc": {
