@@ -212,11 +212,27 @@ void writer::create_software_file() {
 
 void writer::fill_input() {
     auto input_dir = parser.database("directory.source");
+    auto ignored_dir = parser.database("directory.ignored");
+    std::set<std::string> ignored_files;
+
+    // Todo: Improve ignored directory check
+    if(!ignored_dir.empty()) {
+        for(fs::recursive_directory_iterator it(ignored_dir), end; it != end; ++it) {
+            auto p = it->path();
+            if(extension_is(p.string(), ".cpp", ".cxx", ".cc", ".c", ".c++")) {
+                ignored_files.insert(sanitise(p));
+            }
+        }
+    }
 
     for(fs::recursive_directory_iterator it(input_dir), end; it != end; ++it) {
         auto p = it->path();
         if(extension_is(p.string(), ".cpp", ".cxx", ".cc", ".c", ".c++")) {
-            input.insert(sanitise(p));
+            auto sanitised = sanitise(p);
+            if(ignored_files.count(sanitised)) {
+                continue;
+            }
+            input.insert(sanitised);
         }
     }
 

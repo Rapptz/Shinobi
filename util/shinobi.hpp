@@ -126,6 +126,10 @@ private:
             if(directory.has<js::String>("object")) {
                 data["directory.object"] = directory.get<js::String>("object");
             }
+
+            if(directory.has<js::String>("ignored")) {
+                data["directory.ignored"] = directory.get<js::String>("ignored");
+            }
         }
     }
 
@@ -212,6 +216,7 @@ public:
         data["directory.source"] = ".";
         data["directory.build"]  = "bin";
         data["directory.object"] = "obj";
+        data["directory.ignored"] = "";
 
         // default file info
         data["files.extra"]   = "";

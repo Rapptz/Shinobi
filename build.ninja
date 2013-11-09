@@ -5,12 +5,12 @@ builddir = bin
 objdir = obj
 cxx = g++
 cxxflags = -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2 -DNDEBUG
-incflag = -I"."
+incflags = -I"."
 linkflags = -static
 libs = -lboost_system -lboost_filesystem
 
 rule compile
-    command = $cxx -MMD -MF $out.d $cxxflags -c $in -o $out $incflag
+    command = $cxx -MMD -MF $out.d $cxxflags -c $in -o $out $incflags
     deps = gcc
     depfile = $out.d
     description = Building $in to $out
