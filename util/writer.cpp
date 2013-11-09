@@ -15,13 +15,36 @@ R"shin({
         "type": "software"
     },
 
-    "compiler": {
-        "name": "g++",
-        "flags": ["-std=c++11", "-pedantic", "-pedantic-errors", "-Wextra", "-Wall", "-O2"]
+    "linker": {
+        "non-msvc": {
+            "flags": ["-static"]
+        }
+    }
+
+    "release": {
+        "non-msvc": {
+            "flags": ["-std=c++11", "-pedantic", "-pedantic-errors", "-Wextra", "-Wall", "-O2", "-DNDEBUG"]
+        },
+
+        "msvc": {
+            "flags": ["/O2", "/DNDEBUG", "/EHa", "/TP", "/W3"]
+        }
     },
 
-    "linker": {
-        "flags": ["-static"]
+    "debug": {
+        "non-msvc": {
+            "flags": ["-std=c++11", "-pedantic", "-pedantic-errors", "-Wextra", "-Wall"]
+        },
+
+        "msvc": {
+            "flags": ["/EHa", "/TP", "/W3", "/F5120"]
+        },
+
+        "linker": {
+            "msvc": {
+                "flags": ["/DEBUG"]
+            }
+        }
     },
 
     "include_paths": ["."],
