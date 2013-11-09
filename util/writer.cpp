@@ -245,6 +245,8 @@ void writer::general_variables() {
 
 void writer::build_sequence() {
     // Generate build sequence
+
+    std::string output_file;
     for(auto&& p : input) {
         auto directory = dir / object / p;
         if(!fs::exists(directory.parent_path())) {
@@ -252,10 +254,14 @@ void writer::build_sequence() {
         }
 
         if(!parser.is_msvc()) {
-            auto output_file = "$objdir/" + sanitise(fs::path(p).replace_extension(".o"));
-            output.insert(output_file);
-            file.build(output_file, p, "compile");   
+            output_file = "$objdir/" + sanitise(fs::path(p).replace_extension(".o"));
         }
+        else {
+            output_file = "$objdir/" + sanitise(fs::path(p).replace_extension(".obj"));
+        }
+
+        output.insert(output_file);
+        file.build(output_file, p, "compile");
     }
 }
 
