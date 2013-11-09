@@ -181,7 +181,7 @@ void writer::build_sequence() {
     // Generate build sequence
     for(auto&& p : input) {
         auto directory = dir / object / p;
-        if(fs::exists(directory.parent_path())) {
+        if(!fs::exists(directory.parent_path())) {
             fs::create_directories(directory.parent_path());
         }
 
