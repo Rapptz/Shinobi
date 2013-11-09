@@ -14,3 +14,6 @@ obj/*
 
 # local .cpp file
 dev.cpp
+
+# test directory
+test/*
