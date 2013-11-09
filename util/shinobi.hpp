@@ -261,7 +261,7 @@ public:
     }
 
     bool is_msvc() const {
-        return compiler == "msvc";
+        return compiler == "cl";
     }
 
     template<typename T>
