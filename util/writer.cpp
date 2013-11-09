@@ -238,7 +238,7 @@ void writer::general_variables() {
         file.newline();
         file.rule("compile", compile_command, "deps = msvc", "description = Compiling $in");
         file.newline();
-        file.rule("link", linker_command, "rspfile = $out.rsp", "rspfile_contents = $in", "description = Creating $out");
+        file.rule("link", linker_command, "rspfile = $out.rsp", "rspfile_content = $in", "description = Creating $out");
         file.newline();
     }
 }
