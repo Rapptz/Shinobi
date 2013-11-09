@@ -138,7 +138,7 @@ private:
                 data["include.paths"] = prefix_list(o.get<js::Array>("include_paths"), false, "-I");
             }
             else {
-                data["include.paths"] = prefix_list(o.get<js::Array>("include_paths"));
+                data["include.paths"] = prefix_list(o.get<js::Array>("include_paths"), false, "/I");
             }
         }
     }
