@@ -279,7 +279,7 @@ void writer::create_library_file() {
                 #if defined(SHINOBI_WINDOWS)
                     builddir += parser.library_name(i) + ".dll";
                     auto libname = "lib" + parser.library_name(i) + ".a";
-                    auto extras = "extras = -Wl,--out-implib=" + libname + ",--export-all-symbols,--enable-auto-import";
+                    auto extras = "extras = -Wl,--out-implib=$builddir/" + libname + ",--export-all-symbols,--enable-auto-import";
                     file.build(builddir, flatten_list(output), "shared", extras);
                 #else
                     auto version = parser.database("project.version");
