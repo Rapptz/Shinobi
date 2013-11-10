@@ -333,6 +333,11 @@ void writer::library_variables() {
         file.rule("shared", "$cxx -shared $extras -o $out $in", "description = Creating shared library $out");
         file.newline();
     }
+    else {
+        file.newline();
+        file.rule("static", "lib /out:$out $in", "description = Creating static library $out");
+        file.newline();
+    }
 }
 
 void writer::create_library_file() {
