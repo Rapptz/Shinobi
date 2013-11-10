@@ -24,9 +24,10 @@ have a type as well. These will be specified in the documentation below. The fol
 The `project` object has two possible values. 
 
 |Value   |Type   | Effect                                                                |
-|:------:|:-----:|:-------------------------------------------------------------------- :|
+|:------:|:-----:|:---------------------------------------------------------------------:|
 |name    |String |Specifies the final executable name when the project type is software. |
 |type    |String |Specifies how to parse the Shinobi file.                               |
+
 
 The `name` value is ignored if the `type` is library but would be useful to keep for identification purposes. While `name` 
 can be specified as anything, `type` only has two recognisable values. `software` and `library`. `software` would
