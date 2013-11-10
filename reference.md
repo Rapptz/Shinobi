@@ -28,6 +28,7 @@ The `project` object has two possible values.
 |name    |String |Specifies the final executable name when the project type is software. |
 |type    |String |Specifies how to parse the Shinobi file.                               |
 
+
 The `name` value is ignored if the `type` is library but would be useful to keep for identification purposes. While `name` 
 can be specified as anything, `type` only has two recognisable values. `software` and `library`. `software` would
 make the final result of parsing an executable while `library` would create library files (.lib on Windows, .a on Linux and OS X).
