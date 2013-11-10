@@ -27,7 +27,7 @@ R"shin({
         },
 
         "msvc": {
-            "flags": ["/O2", "/DNDEBUG", "/EHa", "/TP", "/W3"]
+            "flags": ["/O2", "/DNDEBUG", "/EHsa", "/TP", "/W3"]
         }
     },
 
@@ -37,7 +37,7 @@ R"shin({
         },
 
         "msvc": {
-            "flags": ["/EHa", "/TP", "/W3", "/F5120"]
+            "flags": ["/EHsa", "/TP", "/W3", "/F5120"]
         },
 
         "linker": {
