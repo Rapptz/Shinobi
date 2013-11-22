@@ -54,7 +54,7 @@ private:
             out << leading_spaces << str.substr(0, space) << " $\n";
             str = str.substr(space + 1);
 
-            leading_spaces.insert(leading_spaces.size(), 4, ' ');
+            leading_spaces = std::string((indent + 1) * 4, ' ');
         }
 
         out << leading_spaces << str << '\n';

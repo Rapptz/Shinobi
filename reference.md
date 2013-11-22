@@ -24,7 +24,7 @@ have a type as well. These will be specified in the documentation below. The fol
 The `project` object has two possible values. 
 
 |Value   |Type   | Effect                                                                |
-|:------:|:-----:|:---------------------------------------------------------------------:|
+|:------:|:-----:|:----------------------------------------------------------------------|
 |name    |String |Specifies the final executable name when the project type is software. |
 |type    |String |Specifies how to parse the Shinobi file.                               |
 
