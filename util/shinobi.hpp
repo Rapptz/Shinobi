@@ -69,20 +69,20 @@ private:
         }
     }
 
-    void parse_compiler(const js::Object& o, const std::string& setting = "compiler.flags") {
+    void parse_compiler(const js::Object& o, const std::string& setting = "compiler.flags", const std::string& key = "flags") {
         if(o.has<js::Object>(compiler)) {
             auto comp = o.get<js::Object>(compiler);
 
-            if(comp.has<js::Array>("flags")) {
-                data[setting] = prefix_list(comp.get<js::Array>("flags"), true);
+            if(comp.has<js::Array>(key)) {
+                data[setting] = prefix_list(comp.get<js::Array>(key), true);
             }
         }
         else if(compiler == "g++" || compiler == "clang++" || compiler == "clang" || compiler == "gcc") {
             if(o.has<js::Object>("non-msvc")) {
                 auto comp = o.get<js::Object>("non-msvc");
 
-                if(comp.has<js::Array>("flags")) {
-                    data[setting] = prefix_list(comp.get<js::Array>("flags"), true);
+                if(comp.has<js::Array>(key)) {
+                    data[setting] = prefix_list(comp.get<js::Array>(key), true);
                 }
             }
         }
@@ -97,6 +97,8 @@ private:
             if(linker.has<js::Array>("libraries")) {
                 data["linker.libraries"] = prefix_list(linker.get<js::Array>("libraries"), true);
             }
+
+            parse_compiler(linker, "linker.libraries", "libraries");
 
             if(linker.has<js::Array>("library_paths")) {
                 if(!compiler.empty() && compiler != "msvc") {
