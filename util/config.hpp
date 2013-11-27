@@ -3,8 +3,8 @@
 
 #define SHINOBI_VERSION_MAJOR 0
 #define SHINOBI_VERSION_MINOR 9
-#define SHINOBI_VERSION_PATCH 5
-#define SHINOBI_VERSION "0.9.5"
+#define SHINOBI_VERSION_PATCH 1
+#define SHINOBI_VERSION "0.9.1"
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(_WIN64)
 #define SHINOBI_WINDOWS
