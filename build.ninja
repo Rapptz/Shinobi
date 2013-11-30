@@ -7,7 +7,7 @@ cxx = g++
 cxxflags = -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2 -DNDEBUG
 incflags = -I"." -I"libs"
 linkflags = -static
-libs = -lboost_system -lboost_filesystem
+libs = -lboost_system -lboost_filesystem -llua
 
 rule compile
     command = $cxx -MMD -MF $out.d $cxxflags -c $in -o $out $incflags
@@ -20,8 +20,9 @@ rule link
     description = Creating $out
 
 build $objdir/main.o: compile main.cpp
+build $objdir/util/shinobi.o: compile util/shinobi.cpp
 
-build $builddir/shinobi: link $objdir/main.o
+build $builddir/shinobi: link $objdir/main.o $objdir/util/shinobi.o
 
 build install: phony $builddir/shinobi
 
