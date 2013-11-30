@@ -42,6 +42,8 @@ shinobi::~shinobi() = default;
 void shinobi::fill_config_table() {
     std::string table("config = constant {\n    release = ");
     table += (config.release ? "true" : "false");
+    table += ",\n    ";
+    table += (config.debug ? "true" : "false");
     table += "\n}\n";
     lua->script(table);
 }
@@ -74,5 +76,6 @@ end
 
 void shinobi::release(bool b) {
     config.release = b;
+    config.debug = !b;
 }
 } // util

@@ -20,11 +20,15 @@ private:
     ninja file;
     struct {
         bool release;
+        bool debug;
     } config;
+
+    void fill_config_table();
 public:
     shinobi(std::ostream& out);
     ~shinobi();
     void parse();
+    void release(bool);
 };
 } // util
 
