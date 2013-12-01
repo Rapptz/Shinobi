@@ -27,40 +27,46 @@
 #include <type_traits>
 
 namespace sol {
+template<typename T, typename R = void>
+using EnableIf = typename std::enable_if<T::value, R>::type;
+
+template<typename T, typename R = void>
+using DisableIf = typename std::enable_if<!T::value, R>::type;
+
 namespace stack {
 namespace detail {
 template<typename T>
-inline T pop_unsigned(lua_State* L, std::true_type) {
-    return lua_tounsigned(L, -1);
+inline T get_unsigned(lua_State* L, std::true_type, int index = -1) {
+    return lua_tounsigned(L, index);
 }
 
 template<typename T>
-inline T pop_unsigned(lua_State* L, std::false_type) {
-    return lua_tointeger(L, -1);
+inline T get_unsigned(lua_State* L, std::false_type, int index = -1) {
+    return lua_tointeger(L, index);
 }
 
 template<typename T>
-inline T pop_arithmetic(lua_State* L, std::false_type) {
+inline T get_arithmetic(lua_State* L, std::false_type, int index = -1) {
     // T is a floating point
-    return lua_tonumber(L, -1);
+    return lua_tonumber(L, index);
 }
 
 template<typename T>
-inline T pop_arithmetic(lua_State* L, std::true_type) {
+inline T get_arithmetic(lua_State* L, std::true_type, int index = -1) {
     // T is an integral
-    return pop_unsigned<T>(L, std::is_unsigned<T>{});
+    return get_unsigned<T>(L, std::is_unsigned<T>{}, index);
 }
 
 template<typename T>
-inline T pop_helper(lua_State* L, std::true_type) {
+inline T get_helper(lua_State* L, std::true_type, int index = -1) {
     // T is a class type
-    return T(L, -1);
+    return T(L, index);
 }
 
 template<typename T>
-inline T pop_helper(lua_State* L, std::false_type) {
+inline T get_helper(lua_State* L, std::false_type, int index = -1) {
     // T is a fundamental type
-    return pop_arithmetic<T>(L, std::is_integral<T>{});
+    return get_arithmetic<T>(L, std::is_integral<T>{}, index);
 }
 
 template<typename T>
@@ -87,36 +93,36 @@ inline void push_arithmetic(lua_State* L, T x, std::false_type) {
 } // detail
 
 template<typename T>
-inline T pop(lua_State* L) {
-    auto result = detail::pop_helper<T>(L, std::is_class<T>{});
-    lua_pop(L, 1);
-    return result;
+inline T get(lua_State* L, int index = -1) {
+    return detail::get_helper<T>(L, std::is_class<T>{}, index);
 }
 
 template<>
-inline bool pop<bool>(lua_State* L) {
-    bool result = lua_toboolean(L, -1) != 0;
-    lua_pop(L, 1);
-    return result;
+inline bool get<bool>(lua_State* L, int index) {
+    return lua_toboolean(L, index) != 0;
 }
 
 template<>
-inline std::string pop<std::string>(lua_State* L) {
+inline std::string get<std::string>(lua_State* L, int index) {
     std::string::size_type len;
-    auto str = lua_tolstring(L, -1, &len);
-    lua_pop(L, 1);
+    auto str = lua_tolstring(L, index, &len);
     return { str, len };
 }
 
 template<>
-inline const char* pop<const char*>(lua_State* L) {
-    auto result = lua_tostring(L, -1);
-    lua_pop(L, 1);
-    return result;
+inline const char* get<const char*>(lua_State* L, int index) {
+    return lua_tostring(L, index);
 }
 
 template<typename T>
-inline typename std::enable_if<std::is_arithmetic<T>::value>::type push(lua_State* L, T arithmetic) {
+inline T pop(lua_State* L) {
+    auto r = get<T>(L);
+    lua_pop(L, 1);
+    return r;
+}
+
+template<typename T>
+inline EnableIf<std::is_arithmetic<T>> push(lua_State* L, T arithmetic) {
     detail::push_arithmetic(L, arithmetic, std::is_integral<T>{});
 }
 

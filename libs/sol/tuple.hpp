@@ -19,45 +19,35 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef SOL_TABLE_HPP
-#define SOL_TABLE_HPP
+#ifndef SOL_TUPLE_HPP
+#define SOL_TUPLE_HPP
 
-#include "stack.hpp"
+#include <tuple>
+#include <cstddef>
 
 namespace sol {
-class table : virtual public reference {
-public:
-    table() noexcept: reference{} {}
-    table(lua_State* L, int index = -1): reference(L, index) {
-        type_assert(L, index, type::table);
-    }
+namespace detail {
+template<size_t... Ns>
+struct indices {};
 
-    template<typename T, typename U>
-    T get(U&& key) const {
-        push();
-        stack::push(state(), std::forward<U>(key));
-        lua_gettable(state(), -2);
-        type_assert(state(), -1, type_of<T>());
-        auto result = stack::pop<T>(state());
-        lua_pop(state(), 1);
-        return result;
-    }
+template<size_t N, size_t... Ns>
+struct build_indices : build_indices<N-1, N-1, Ns...> {};
 
-    template<typename T, typename U>
-    table& set(T&& key, U&& value) {
-        push();
-        stack::push(state(), std::forward<T>(key));
-        stack::push(state(), std::forward<U>(value));
-        lua_settable(state(), -3);
-        lua_pop(state(), 1);
-        return *this;
-    }
+template<size_t... Ns>
+struct build_indices<0, Ns...> : indices<Ns...> {};
 
-    size_t size() const {
-        push();
-        return lua_rawlen(state(), -1);
-    }
-};
+using std::get;
+
+template<typename Function, typename Tuple, size_t... Indices>
+inline auto call(Function f, const Tuple& t, indices<Indices...>) -> decltype(f(get<Indices>(t)...)) {
+    return f(get<Indices>(t)...);
+}
+} // detail
+
+template<typename Function, typename... Args>
+inline auto call(Function f, const std::tuple<Args...>& t) -> decltype(detail::call(f, t, detail::build_indices<sizeof...(Args)>{})) {
+    return call(f, t, detail::build_indices<sizeof...(Args)>{});
+}
 } // sol
 
-#endif // SOL_TABLE_HPP
+#endif // SOL_TUPLE_HPP

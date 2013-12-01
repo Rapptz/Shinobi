@@ -19,45 +19,32 @@
 // IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 // CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-#ifndef SOL_TABLE_HPP
-#define SOL_TABLE_HPP
+#ifndef SOL_OBJECT_HPP
+#define SOL_OBJECT_HPP
 
-#include "stack.hpp"
+#include "table.hpp"
 
 namespace sol {
-class table : virtual public reference {
+class object : public table {
 public:
-    table() noexcept: reference{} {}
-    table(lua_State* L, int index = -1): reference(L, index) {
-        type_assert(L, index, type::table);
-    }
+    object(lua_State* L, int index = -1): reference(L, index) {}
+    object() = default;
 
-    template<typename T, typename U>
-    T get(U&& key) const {
+    template<typename T>
+    T as() {
         push();
-        stack::push(state(), std::forward<U>(key));
-        lua_gettable(state(), -2);
         type_assert(state(), -1, type_of<T>());
-        auto result = stack::pop<T>(state());
-        lua_pop(state(), 1);
-        return result;
+        return stack::get<T>(state());
     }
 
-    template<typename T, typename U>
-    table& set(T&& key, U&& value) {
+    template<typename T>
+    bool is() {
         push();
-        stack::push(state(), std::forward<T>(key));
-        stack::push(state(), std::forward<U>(value));
-        lua_settable(state(), -3);
-        lua_pop(state(), 1);
-        return *this;
-    }
-
-    size_t size() const {
-        push();
-        return lua_rawlen(state(), -1);
+        auto expected = type_of<T>();
+        auto actual = lua_type(state(), -1);
+        return (static_cast<int>(expected) == actual) || (expected == type::poly);
     }
 };
 } // sol
 
-#endif // SOL_TABLE_HPP
+#endif // SOL_OBJECT_HPP
