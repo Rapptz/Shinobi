@@ -24,11 +24,13 @@ private:
     } config;
 
     void fill_config_table();
+    void directory();
 public:
     shinobi(std::ostream& out);
     ~shinobi();
-    void parse();
-    void release(bool);
+    void parse(const std::string& compiler);
+    void release(bool b);
+    void create();
 };
 } // util
 
