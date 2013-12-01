@@ -22,9 +22,9 @@ private:
         bool release;
         bool debug;
     } config;
-
     void fill_config_table();
-    void directory();
+    void fill_input(const std::string& directory);
+    std::string directory();
 public:
     shinobi(std::ostream& out);
     ~shinobi();
