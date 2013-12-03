@@ -1,4 +1,4 @@
-#include <sol.hpp>
+#include <sol/sol.hpp>
 #include <boost/filesystem.hpp>
 #include "shinobi.hpp"
 #include "errors.hpp"
