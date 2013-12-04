@@ -90,12 +90,14 @@ void shinobi::fill_config_table() {
     lua->script(table);
 }
 
-void shinobi::parse(const std::string& compiler_name) {
+void shinobi::parse() {}
+
+void shinobi::initialise_lua(const std::string& compiler_name) {
     if(!fs::exists("shinobi.lua")) {
         create_default_file("shinobi.lua");
     }
 
-    lua->open_libraries(sol::lib::base, sol::lib::string, sol::lib::math, sol::lib::table);
+    lua->open_libraries(sol::lib::base, sol::lib::string, sol::lib::math, sol::lib::table, sol::lib::os, sol::lib::io);
     // inject defaults.
     lua->script(R"delim(project = {}
 compiler = {}
