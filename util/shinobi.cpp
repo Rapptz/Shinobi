@@ -116,7 +116,51 @@ end
 )delim");
     lua->get<sol::table>("compiler").set("name", compiler_name);
     fill_config_table();
+    register_lua_functions();
     lua->open_file("shinobi.lua");
+}
+
+void shinobi::register_lua_functions() {
+    // extended os functions
+    auto os = lua->get<sol::table>("os");
+    os.set_function("mkdir", [](std::string dir) {
+        try {
+            if(!fs::exists(dir)) {
+                fs::create_directory(dir);
+            }
+        }
+        catch(const std::exception&) {
+            throw shinobi_error("failed to create directory " + dir);
+        }
+    });
+    os.set_function("mkdirs", [](std::string dir) {
+        try {
+            if(!fs::exists(dir)) {
+                fs::create_directories(dir);
+            }
+        }
+        catch(const std::exception&) {
+            throw shinobi_error("failed to create directory " + dir);
+        }
+    });
+    os.set_function("rmdir", [](std::string dir) {
+        try {
+            fs::remove_all(dir);
+        }
+        catch(const std::exception&) {
+            throw shinobi_error("failed to remove directory " + dir);
+        }
+    });
+
+    #if defined(SHINOBI_WINDOWS)
+    os.set("name", "windows");
+    #elif defined(SHINOBI_LINUX)
+    os.set("name", "linux");
+    #elif defined(SHINOBI_MACOS)
+    os.set("name", "osx");
+    #else
+    os.set("name", "unknown");
+    #endif
 }
 
 void shinobi::release(bool b) {
