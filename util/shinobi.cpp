@@ -78,8 +78,59 @@ std::string sanitise(const fs::path& p) noexcept {
     return result;
 }
 
+namespace os {
+void mkdir(std::string dir) {
+    try {
+        fs::path p(dir);
+        if(!fs::exists(p) && fs::is_directory(p)) {
+            fs::create_directory(p);
+        }
+    }
+    catch(const std::exception& e) {
+        throw shinobi_error("failed to make directory " + dir);
+    }
+}
+
+void mkdirs(std::string dir) {
+    try {
+        fs::path p(dir);
+        if(!fs::exists(p) && fs::is_directory(p)) {
+            fs::create_directories(p);
+        }
+    }
+    catch(const std::exception& e) {
+        throw shinobi_error("failed to make any or all directories under " + dir);
+    }
+}
+
+void rmdir(std::string dir) {
+    try {
+        fs::path p(dir);
+        if(fs::exists(p) && fs::is_directory(p)) {
+            fs::remove(p);
+        }
+    }
+    catch(const std::exception& e) {
+        throw shinobi_error("failed to remove directory " + dir + " (maybe it's not empty?)");
+    }
+}
+
+void rmdirs(std::string dir) {
+    try {
+        fs::path p(dir);
+        if(fs::exists(p) && fs::is_directory(p)) {
+            fs::remove_all(p);
+        }
+    }
+    catch(const std::exception& e) {
+        throw shinobi_error("failed to remove directory " + dir + " (maybe it's not empty?)");
+    }
+}
+} // os
+
+
 shinobi::shinobi(std::ostream& out, const std::string& compiler_name): lua(new sol::state), file(out) {
-    lua->open_libraries(sol::lib::base, sol::lib::string, sol::lib::math, sol::lib::table);
+    lua->open_libraries(sol::lib::base, sol::lib::string, sol::lib::table, sol::lib::os);
     // inject defaults.
     lua->script(R"delim(project = {}
 compiler = {}
@@ -98,9 +149,29 @@ end
 )delim");
     lua->get<sol::table>("compiler").set("name", compiler_name);
     fill_config_table();
+    register_functions();
 }
 
 shinobi::~shinobi() = default;
+
+void shinobi::register_functions() {
+    // extend OS functionality
+    auto os = lua->get<sol::table>("os");
+    os.set_function("mkdir", os::mkdir);
+    os.set_function("mkdirs", os::mkdirs);
+    os.set_function("rmdir", os::rmdir);
+    os.set_function("rmdirs", os::rmdirs);
+
+    #if SHINOBI_WINDOWS
+    os.set("name", "windows");
+    #elif SHINOBI_LINUX
+    os.set("name", "linux")
+    #elif SHINOBI_MACOS
+    os.set("name", "osx");
+    #else
+    os.set("name", "unknown");
+    #endif
+}
 
 void shinobi::fill_config_table() {
     std::string table("config = constant {\n    release = ");

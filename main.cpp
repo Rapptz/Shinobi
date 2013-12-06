@@ -2,5 +2,5 @@
 #include <iostream>
 
 int main() {
-    util::shinobi x(std::cout);
+    util::shinobi x(std::cout, "g++");
 }

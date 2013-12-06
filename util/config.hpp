@@ -7,13 +7,13 @@
 #define SHINOBI_VERSION "0.9.1"
 
 #if defined(_WIN32) || defined(__WIN32__) || defined(_WIN64)
-#define SHINOBI_WINDOWS
+#define SHINOBI_WINDOWS 1
 
 #elif defined(linux) || defined(__linux)
-#define SHINOBI_LINUX
+#define SHINOBI_LINUX 1
 
 #elif defined(__APPLE__) || defined(__MACH__) || defined(macintosh) || defined(Macintosh)
-#define SHINOBI_MACOS
+#define SHINOBI_MACOS 1
 
 #endif // System-specific
 

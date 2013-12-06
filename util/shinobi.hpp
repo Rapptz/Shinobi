@@ -22,9 +22,8 @@ private:
         bool release;
         bool debug;
     } config;
-    void initialise_lua(const std::string& compiler_name);
     void fill_config_table();
-    void register_lua_functions();
+    void register_functions();
     void fill_input(const std::string& directory);
     std::string directory();
 public:
