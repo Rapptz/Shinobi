@@ -175,6 +175,20 @@ void shinobi::register_functions() {
             throw shinobi_error("unable to walk through directory " + dir);
         }
     });
+    os.set_function("listdir", [this](std::string dir) {
+        auto t = lua->create_table();
+        int index = 1;
+        try {
+            for(fs::directory_iterator f(dir), l; f != l; ++f, ++index) {
+                t.set(index, f->path().string());
+            }
+
+            return t;
+        }
+        catch(const std::exception& e) {
+            throw shinobi_error("unable to list directory " + dir);
+        }
+    });
 
     #if SHINOBI_WINDOWS
     os.set("name", "windows");
