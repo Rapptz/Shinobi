@@ -60,8 +60,8 @@ void replace_all(std::string& str, const std::string& from, const std::string& t
 }
 
 std::string sanitise(const fs::path& p) noexcept {
-    // Remove ./
     auto result = p.string();
+    // Remove ./
     auto pos = result.find("./");
 
     if(pos == std::string::npos) {
@@ -180,7 +180,7 @@ void shinobi::register_functions() {
         int index = 1;
         try {
             for(fs::directory_iterator f(dir), l; f != l; ++f, ++index) {
-                t.set(index, f->path().string());
+                t.set(index, sanitise(f->path()));
             }
 
             return t;
@@ -269,34 +269,27 @@ void shinobi::release(bool b) {
     config.debug = !b;
 }
 
-void shinobi::fill_input(const std::string& directory) {
-    for(fs::recursive_directory_iterator it(directory), end; it != end; ++it) {
-        auto p = it->path();
-        if(extension_is(p.string(), ".cpp", ".cxx", ".cc", ".c", ".c++")) {
-            input.insert(sanitise(p));
-        }
+void shinobi::fill_input(const sol::table& t) {
+    auto o = t.get<sol::object>("files");
+    if(!o.is<sol::table>()) {
+        throw shinobi_fatal_error("input files missing (did you forget to set the files table?)");
+    }
+
+    auto files = o.as<sol::table>();
+    for(size_t i = 1; i < files.size(); ++i) {
+        input.insert(files.get<std::string>(i));
     }
 }
 
 std::string shinobi::directory() {
     auto dir = lua->get<sol::table>("directory");
-    auto source = dir.get<sol::object>("source");
-    if(!source.is<std::string>()) {
-        throw shinobi_error("directory.source has no value or is of invalid type (must be string)");
-    }
-
-    fill_input(source.as<std::string>());
     auto build = dir.get<sol::object>("build");
     auto object = dir.get<sol::object>("object");
-    fs::path bin = build.is<std::string>() ? build.as<std::string>() : "bin";
+    std::string bin = build.is<std::string>() ? build.as<std::string>() : "bin";
     std::string obj = object.is<std::string>() ? object.as<std::string>() : "obj";
-    file.variable("builddir", bin.string());
+    file.variable("builddir", bin);
     file.variable("objdir", obj);
-
-    if(!fs::exists(bin)) {
-        fs::create_directories(bin);
-    }
-
+    os::mkdirs(bin);
     return obj;
 }
 
@@ -305,5 +298,6 @@ void shinobi::create() {
     file.newline();
     file.variable("ninja_required_version", "1.3");
     auto obj = directory();
+    fill_input(lua->global_table());
 }
 } // util

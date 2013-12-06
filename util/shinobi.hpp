@@ -9,6 +9,7 @@
 
 namespace sol {
 class state;
+class table;
 } // sol
 
 namespace util {
@@ -24,7 +25,7 @@ private:
     } config;
     void fill_config_table();
     void register_functions();
-    void fill_input(const std::string& directory);
+    void fill_input(const sol::table&);
     std::string directory();
 public:
     shinobi(std::ostream& out, const std::string& compiler_name);
