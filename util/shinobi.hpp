@@ -25,8 +25,9 @@ private:
     } config;
     void fill_config_table();
     void register_functions();
-    void fill_input(const sol::table&);
-    void compiler_linker_tree();
+    void fill_input(const sol::table& t);
+    void build_sequence(const std::string& dir, const bool is_gcc_like);
+    bool compiler_linker_tree();
     std::string directory();
 public:
     shinobi(std::ostream& out, const std::string& compiler_name);

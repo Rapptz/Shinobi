@@ -229,7 +229,9 @@ void shinobi::fill_config_table() {
     table += (config.debug ? "true" : "false");
     table += "\n}\n";
     lua->script(table);
-}void shinobi::open_file(const std::string& filename) {
+}
+
+void shinobi::open_file(const std::string& filename) {
     // default name is shinobi.lua
     if(!fs::exists(filename)) {
         create_default_file(filename);
@@ -237,7 +239,7 @@ void shinobi::fill_config_table() {
     lua->open_file(filename);
 }
 
-void shinobi::compiler_linker_tree() {
+bool shinobi::compiler_linker_tree() {
     std::string compiler_command("$cxx ");
     std::string linker_command("$cxx ");
     auto cxx = lua->get<sol::table>("compiler");
@@ -330,6 +332,29 @@ void shinobi::compiler_linker_tree() {
         file.rule("link", linker_command, "rspfile = $out.rsp", "rspfile_content = $in", "description = Creating $out");
         file.newline();
     }
+
+    return is_gcc_like;
+}
+
+void shinobi::build_sequence(const std::string& dir, const bool is_gcc_like) {
+    std::string output_file;
+    auto current_directory = fs::current_path();
+    for(auto&& file : input) {
+        auto directory = current_directory / dir / file;
+        if(!fs::exists(directory.parent_path())) {
+            fs::create_directories(directory.parent_path());
+        }
+
+        if(is_gcc_like) {
+            output_file = "$objdir/" + sanitise(fs::path(file).replace_extension(".o"));
+        }
+        else {
+            output_file = "$objdir/" + sanitise(fs::path(file).replace_extension(".obj"));
+        }
+
+        output.insert(output_file);
+        file.build(output_file, file, "compile");
+    }
 }
 
 void shinobi::release(bool b) {
@@ -367,6 +392,7 @@ void shinobi::create() {
     file.variable("ninja_required_version", "1.3");
     auto obj = directory();
     fill_input(lua->global_table());
-    compiler_linker_tree();
+    const bool is_gcc_like = compiler_linker_tree();
+    build_sequence(obj, is_gcc_like);
 }
 } // util
