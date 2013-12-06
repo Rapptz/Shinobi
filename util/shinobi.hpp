@@ -27,6 +27,7 @@ private:
     void register_functions();
     void fill_input(const sol::table& t);
     void build_sequence(const std::string& dir, const bool is_gcc_like);
+    void create_executable();
     bool compiler_linker_tree();
     std::string directory();
 public:
