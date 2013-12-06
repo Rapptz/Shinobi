@@ -28,7 +28,7 @@ private:
     void fill_input(const std::string& directory);
     std::string directory();
 public:
-    shinobi(std::ostream& out);
+    shinobi(std::ostream& out, const std::string& compiler_name);
     ~shinobi();
     void open_file(const std::string& filename);
     void release(bool b);

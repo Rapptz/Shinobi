@@ -78,26 +78,8 @@ std::string sanitise(const fs::path& p) noexcept {
     return result;
 }
 
-shinobi::shinobi(std::ostream& out): lua(new sol::state), file(out) {}
-shinobi::~shinobi() = default;
-
-void shinobi::fill_config_table() {
-    std::string table("config = constant {\n    release = ");
-    table += (config.release ? "true" : "false");
-    table += ",\n    ";
-    table += (config.debug ? "true" : "false");
-    table += "\n}\n";
-    lua->script(table);
-}
-
-void shinobi::parse() {}
-
-void shinobi::initialise_lua(const std::string& compiler_name) {
-    if(!fs::exists("shinobi.lua")) {
-        create_default_file("shinobi.lua");
-    }
-
-    lua->open_libraries(sol::lib::base, sol::lib::string, sol::lib::math, sol::lib::table, sol::lib::os, sol::lib::io);
+shinobi::shinobi(std::ostream& out, const std::string& compiler_name): lua(new sol::state), file(out) {
+    lua->open_libraries(sol::lib::base, sol::lib::string, sol::lib::math, sol::lib::table);
     // inject defaults.
     lua->script(R"delim(project = {}
 compiler = {}
@@ -116,6 +98,23 @@ end
 )delim");
     lua->get<sol::table>("compiler").set("name", compiler_name);
     fill_config_table();
+}
+
+shinobi::~shinobi() = default;
+
+void shinobi::fill_config_table() {
+    std::string table("config = constant {\n    release = ");
+    table += (config.release ? "true" : "false");
+    table += ",\n    ";
+    table += (config.debug ? "true" : "false");
+    table += "\n}\n";
+    lua->script(table);
+}void shinobi::open_file(const std::string& filename) {
+    // default name is shinobi.lua
+    if(!fs::exists(filename)) {
+        create_default_file(filename);
+    }
+    lua->open_file(filename);
 }
 
 void shinobi::register_lua_functions() {
