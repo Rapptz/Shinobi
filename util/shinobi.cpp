@@ -161,6 +161,20 @@ void shinobi::register_functions() {
     os.set_function("mkdirs", os::mkdirs);
     os.set_function("rmdir", os::rmdir);
     os.set_function("rmdirs", os::rmdirs);
+    os.set_function("walk", [this](std::string dir) {
+        auto t = lua->create_table();
+        int index = 1;
+        try {
+            for(fs::recursive_directory_iterator f(dir), l; f != l; ++f, ++index) {
+                t.set(index, f->path().string());
+            }
+
+            return t;
+        }
+        catch(const std::exception& e) {
+            throw shinobi_error("unable to walk through directory " + dir);
+        }
+    });
 
     #if SHINOBI_WINDOWS
     os.set("name", "windows");
