@@ -199,6 +199,11 @@ void shinobi::register_functions() {
     #else
     os.set("name", "unknown");
     #endif
+
+    // extend string functionality
+    lua->script("function string.endswith(str, ext)\n"
+                "    return string.find(str, ext, -(#ext), true) ~= nil\n"
+                "end\n");
 }
 
 void shinobi::fill_config_table() {
