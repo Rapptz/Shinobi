@@ -26,6 +26,7 @@ private:
     void fill_config_table();
     void register_functions();
     void fill_input(const sol::table&);
+    void compiler_linker_tree();
     std::string directory();
 public:
     shinobi(std::ostream& out, const std::string& compiler_name);
