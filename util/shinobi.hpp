@@ -30,7 +30,7 @@ private:
 public:
     shinobi(std::ostream& out);
     ~shinobi();
-    void parse();
+    void open_file(const std::string& filename);
     void release(bool b);
     void create();
 };

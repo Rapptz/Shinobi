@@ -116,8 +116,6 @@ end
 )delim");
     lua->get<sol::table>("compiler").set("name", compiler_name);
     fill_config_table();
-    register_lua_functions();
-    lua->open_file("shinobi.lua");
 }
 
 void shinobi::register_lua_functions() {
