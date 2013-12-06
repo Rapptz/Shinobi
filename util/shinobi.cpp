@@ -260,7 +260,7 @@ void shinobi::compiler_linker_tree() {
         throw shinobi_fatal_error("unsupported compiler found: \"" + name + '\"');
     }
 
-    obj = cxx.get<sol::object>("paths"); // include paths
+    auto obj = cxx.get<sol::object>("paths"); // include paths
     if(obj.is<sol::table>()) {
         auto cxxpaths = obj.as<sol::table>();
         if(is_gcc_like) {
@@ -272,7 +272,7 @@ void shinobi::compiler_linker_tree() {
         compiler_command += " $cxxpaths";
     }
 
-    auto obj = cxx.get<sol::object>("flags"); // compiler flags
+    obj = cxx.get<sol::object>("flags"); // compiler flags
     if(obj.is<sol::table>()) {
         auto cxxflags = obj.as<sol::table>();
         file.variable("cxxflags", table_to_string(cxxflags));
@@ -317,7 +317,7 @@ void shinobi::compiler_linker_tree() {
 
     if(is_gcc_like) {
         file.newline();
-        file.rule("compile", compile_command, "deps = gcc", "depfile = $out.d", "description = Compiling $in");
+        file.rule("compile", compiler_command, "deps = gcc", "depfile = $out.d", "description = Compiling $in");
         file.newline();
         file.rule("link", linker_command, "description = Creating $out");
         file.newline();
@@ -325,7 +325,7 @@ void shinobi::compiler_linker_tree() {
     else {
         linker_command += " @out.rsp";
         file.newline();
-        file.rule("compile", compile_command, "deps = msvc", "description = Compiling $in");
+        file.rule("compile", compiler_command, "deps = msvc", "description = Compiling $in");
         file.newline();
         file.rule("link", linker_command, "rspfile = $out.rsp", "rspfile_content = $in", "description = Creating $out");
         file.newline();
