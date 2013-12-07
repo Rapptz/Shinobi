@@ -159,11 +159,13 @@ public:
     }
 
     virtual std::unique_ptr<option_base> clone() const {
-        return std::unique_ptr<option_base>(new option<T, Parser>(longer_name, desc, shorter_name, is_required));
+        return std::unique_ptr<option_base>(new option<T, Parser>(longer_name, desc, shorter_name, is_required, get()));
     }
 
     T get() const {
-        return *actual_value;
+        if(actual_value != nullptr)
+            return *actual_value;
+        throw std::logic_error("dereferencing of null pointer (cli::parser is default constructed)");
     }
 };
 
@@ -361,7 +363,7 @@ public:
 
     template<typename CharT, typename Elem>
     friend auto operator<<(std::basic_ostream<CharT, Elem>& out, const parser& p) -> decltype(out) {
-        std::cout << "usage: " << p.program_name() << ' ' << p.usage() << '\n';
+        out << "usage: " << p.program_name() << ' ' << p.usage() << '\n';
         int spaces;
         for(auto&& arg : p.options) {
             spaces = 30;
