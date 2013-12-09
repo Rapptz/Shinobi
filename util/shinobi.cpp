@@ -111,57 +111,6 @@ std::string flatten_list(const Cont& c) {
     return ss.str();
 }
 
-namespace os {
-void mkdir(std::string dir) {
-    try {
-        fs::path p(dir);
-        if(!fs::exists(p) && fs::is_directory(p)) {
-            fs::create_directory(p);
-        }
-    }
-    catch(const std::exception& e) {
-        throw shinobi_error("failed to make directory \"" + dir + '"');
-    }
-}
-
-void mkdirs(std::string dir) {
-    try {
-        fs::path p(dir);
-        if(!fs::exists(p) && fs::is_directory(p)) {
-            fs::create_directories(p);
-        }
-    }
-    catch(const std::exception& e) {
-        throw shinobi_error("failed to make any or all directories under \"" + dir + '"');
-    }
-}
-
-void rmdir(std::string dir) {
-    try {
-        fs::path p(dir);
-        if(fs::exists(p) && fs::is_directory(p)) {
-            fs::remove(p);
-        }
-    }
-    catch(const std::exception& e) {
-        throw shinobi_error("failed to remove directory \"" + dir + "\" (maybe it's not empty?)");
-    }
-}
-
-void rmdirs(std::string dir) {
-    try {
-        fs::path p(dir);
-        if(fs::exists(p) && fs::is_directory(p)) {
-            fs::remove_all(p);
-        }
-    }
-    catch(const std::exception& e) {
-        throw shinobi_error("failed to remove directory " + dir);
-    }
-}
-} // os
-
-
 shinobi::shinobi(std::ostream& out, const std::string& compiler_name): lua(new sol::state), file(out) {
     lua->open_libraries(sol::lib::base, sol::lib::string, sol::lib::table, sol::lib::os);
     // inject defaults.
@@ -182,62 +131,19 @@ end
 )delim");
     lua->get<sol::table>("compiler").set("name", compiler_name);
     fill_config_table();
-    register_functions();
+
+    #if SHINOBI_WINDOWS
+    lua->get<sol::table>("os").set("name", "windows");
+    #elif SHINOBI_LINUX
+    lua->get<sol::table>("os").set("name", "linux")
+    #elif SHINOBI_MACOS
+    lua->get<sol::table>("os").set("name", "osx");
+    #else
+    lua->get<sol::table>("os").set("name", "unknown");
+    #endif
 }
 
 shinobi::~shinobi() = default;
-
-void shinobi::register_functions() {
-    // extend OS functionality
-    auto os = lua->get<sol::table>("os");
-    os.set_function("mkdir", os::mkdir);
-    os.set_function("mkdirs", os::mkdirs);
-    os.set_function("rmdir", os::rmdir);
-    os.set_function("rmdirs", os::rmdirs);
-    os.set_function("walk", [this](std::string dir) {
-        auto t = lua->create_table();
-        int index = 1;
-        try {
-            for(fs::recursive_directory_iterator f(dir), l; f != l; ++f, ++index) {
-                t.set(index, f->path().string());
-            }
-
-            return t;
-        }
-        catch(const std::exception& e) {
-            throw shinobi_error("unable to walk through directory \"" + dir + '"');
-        }
-    });
-    os.set_function("listdir", [this](std::string dir) {
-        auto t = lua->create_table();
-        int index = 1;
-        try {
-            for(fs::directory_iterator f(dir), l; f != l; ++f, ++index) {
-                t.set(index, sanitise(f->path()));
-            }
-
-            return t;
-        }
-        catch(const std::exception& e) {
-            throw shinobi_error("unable to list directory \"" + dir + '"');
-        }
-    });
-
-    #if SHINOBI_WINDOWS
-    os.set("name", "windows");
-    #elif SHINOBI_LINUX
-    os.set("name", "linux")
-    #elif SHINOBI_MACOS
-    os.set("name", "osx");
-    #else
-    os.set("name", "unknown");
-    #endif
-
-    // extend string functionality
-    lua->script("function string.endswith(str, ext)\n"
-                "    return string.find(str, ext, -(#ext), true) ~= nil\n"
-                "end\n");
-}
 
 void shinobi::fill_config_table() {
     std::string table("config = constant {\n    release = ");
@@ -379,15 +285,36 @@ void shinobi::release(bool b) {
     config.debug = !b;
 }
 
-void shinobi::fill_input(const sol::table& t) {
-    auto o = t.get<sol::object>("files");
-    if(!o.is<sol::table>()) {
-        throw shinobi_fatal_error("input files missing (did you forget to set the files table?)");
-    }
+bool is_hidden_directory(const fs::path& p) {
+    auto name = p.filename().string();
+    return name != ".." && name != "." && name.front() == '.';
+}
 
-    auto files = o.as<sol::table>();
-    for(size_t i = 1; i < files.size(); ++i) {
-        input.insert(files.get<std::string>(i));
+void shinobi::recurse_through_directory(const std::string& dir) {
+    // loop through every file in the directory
+    for(fs::recursive_directory_iterator first(dir), last; first != last; ++first) {
+        auto p = first->path();
+        // ignore hidden directories
+        // TODO: work on ignored directories (e.g. directory.ignored = "...")
+        if(fs::is_directory(p) && is_hidden_directory(p)) {
+            first.no_push();
+            continue;
+        }
+
+        // valid file
+        if(fs::is_regular_file(p) && extension_is(p.string(), ".cpp", ".cxx", ".cc", ".c", ".c++")) {
+            input.insert(sanitise(p));
+        }
+    }
+}
+
+void shinobi::fill_input(const sol::table& t) {
+    auto o = t.get<sol::object>("source");
+    if(o.is<sol::nil_t>()) {
+        throw shinobi_fatal_error("no source input directory provided. (did you forget to set directory.source?)");
+    }
+    else if(o.is<std::string>()) {
+        recurse_through_directory(o.as<std::string>());
     }
 }
 
@@ -395,17 +322,20 @@ std::string shinobi::directory() {
     auto dir = lua->get<sol::table>("directory");
     auto build = dir.get<sol::object>("build");
     auto object = dir.get<sol::object>("object");
-    std::string bin = build.is<std::string>() ? build.as<std::string>() : "bin";
+    fs::path bin = build.is<std::string>() ? build.as<std::string>() : "bin";
     std::string obj = object.is<std::string>() ? object.as<std::string>() : "obj";
-    file.variable("builddir", bin);
+    file.variable("builddir", bin.string());
     file.variable("objdir", obj);
-    os::mkdirs(bin);
+
+    if(!fs::exists(bin)) {
+        fs::create_directories(bin);
+    }
     return obj;
 }
 
 void shinobi::create_executable() {
     auto obj = directory();
-    fill_input(lua->global_table());
+    fill_input(lua->get<sol::table>("directory"));
     const bool is_gcc_like = compiler_linker_tree();
     build_sequence(obj, is_gcc_like);
     file.newline();
