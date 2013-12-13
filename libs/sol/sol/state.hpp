@@ -35,7 +35,8 @@ template<class T, class U, class... Args>
 struct are_same<T, U, Args...> : std::integral_constant<bool, std::is_same<T, U>::value && are_same<T, Args...>::value> {};
 
 int atpanic(lua_State* L) {
-    throw sol_error(lua_tostring(L, -1));
+    std::string err = lua_tostring(L, -1);
+    throw sol_error(err);
 }
 } // detail
 
@@ -65,18 +66,10 @@ public:
     global(reg.get<table>(LUA_RIDX_GLOBALS)) {
         lua_atpanic(L.get(), detail::atpanic);
     }
-
-    state(const std::string& filename): 
-    L(luaL_newstate(), lua_close), 
-    reg(L.get(), LUA_REGISTRYINDEX), 
-    global(reg.get<table>(LUA_RIDX_GLOBALS)) {
-        lua_atpanic(L.get(), detail::atpanic);
-        open_file(filename);
-    }
     
     template<typename... Args>
     void open_libraries(Args&&... args) {
-        static_assert(detail::are_same<lib, Args...>{}, "all types must be libraries");
+        static_assert(detail::are_same<lib, Args...>::value, "all types must be libraries");
         if(sizeof...(args) == 0) {
             luaL_openlibs(L.get());
             return;
@@ -129,7 +122,7 @@ public:
     }
 
     void open_file(const std::string& filename) {
-        if(luaL_dofile(L.get(), filename.c_str())) {
+        if (luaL_dofile(L.get(), filename.c_str())) {
             lua_error(L.get());
         }
     }
@@ -158,14 +151,13 @@ public:
     }
 
     template<typename T>
-    table create_table(T&& key, int narr = 0, int nrec = 0) {
-        if(narr == 0 && nrec == 0) {
-            lua_newtable(L.get());
-        }
-        else {
-            lua_createtable(L.get(), narr, nrec);
-        }
+    auto operator[](T&& key) -> decltype(global[std::forward<T>(key)]) {
+        return global[std::forward<T>(key)];
+    }
 
+    template<typename T>
+    table create_table(T&& key, int narr = 0, int nrec = 0) {
+        lua_createtable(L.get(), narr, nrec);
         table result(L.get());
         lua_pop(L.get(), 1);
         global.set(std::forward<T>(key), result);
@@ -173,13 +165,7 @@ public:
     }
 
     table create_table(int narr = 0, int nrec = 0) {
-        if(narr == 0 && nrec == 0) {
-            lua_newtable(L.get());
-        }
-        else {
-            lua_createtable(L.get(), narr, nrec);
-        }
-
+        lua_createtable(L.get(), narr, nrec);
         table result(L.get());
         lua_pop(L.get(), 1);
         return result;

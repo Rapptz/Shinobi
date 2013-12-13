@@ -24,16 +24,12 @@
 
 #include "reference.hpp"
 #include "tuple.hpp"
+#include "traits.hpp"
 #include <utility>
-#include <type_traits>
+#include <array>
+#include <cstring>
 
 namespace sol {
-template<typename T, typename R = void>
-using EnableIf = typename std::enable_if<T::value, R>::type;
-
-template<typename T, typename R = void>
-using DisableIf = typename std::enable_if<!T::value, R>::type;
-
 namespace stack {
 namespace detail {
 template<typename T>
@@ -43,7 +39,7 @@ inline T get_unsigned(lua_State* L, std::true_type, int index = -1) {
 
 template<typename T>
 inline T get_unsigned(lua_State* L, std::false_type, int index = -1) {
-    return lua_tointeger(L, index);
+    return static_cast<T>(lua_tointeger(L, index));
 }
 
 template<typename T>
@@ -59,9 +55,21 @@ inline T get_arithmetic(lua_State* L, std::true_type, int index = -1) {
 }
 
 template<typename T>
-inline T get_helper(lua_State* L, std::true_type, int index = -1) {
+inline T get_nil(lua_State* L, std::true_type, int index = -1) {
+    if (lua_isnil(L, index) == 0)
+        throw sol::sol_error("not nil");
+    return nil_t{};
+}
+
+template<typename T>
+inline T get_nil(lua_State* L, std::false_type, int index = -1) {
     // T is a class type
     return T(L, index);
+}
+
+template<typename T>
+inline T get_helper(lua_State* L, std::true_type, int index = -1) {
+    return get_nil<T>(L, std::is_same<nil_t, T>(), index);
 }
 
 template<typename T>
@@ -143,33 +151,78 @@ inline void push(lua_State* L, lua_CFunction func) {
     lua_pushcfunction(L, func);
 }
 
+inline void push(lua_State* L, lua_CFunction func, int n) {
+    lua_pushcclosure(L, func, n);
+}
+
+inline void push(lua_State* L, void* userdata) {
+    lua_pushlightuserdata(L, userdata);
+}
+
 template<size_t N>
 inline void push(lua_State* L, const char (&str)[N]) {
     lua_pushlstring(L, str, N - 1);
+}
+
+inline void push(lua_State* L, const char* str) {
+    lua_pushlstring(L, str, std::char_traits<char>::length(str));
 }
 
 inline void push(lua_State* L, const std::string& str) {
     lua_pushlstring(L, str.c_str(), str.size());
 }
 
+template<typename T>
+inline void push_user(lua_State* L, T& userdata, const char* metatablekey) {
+    T* pdatum = static_cast<T*>(lua_newuserdata(L, sizeof(T)));
+    T& datum = *pdatum;
+    datum = userdata;
+    if (metatablekey != nullptr) {
+        lua_getfield(L, LUA_REGISTRYINDEX, metatablekey);
+        lua_setmetatable(L, -2);
+    }
+}
+
+template<typename T, size_t N>
+inline void push(lua_State* L, const std::array<T, N>& data) {
+    for (auto&& i : data) {
+        push(L, i);
+    }
+}
+
+template<typename T>
+inline int push_user(lua_State* L, T& item) {
+    typedef typename std::decay<T>::type TValue;
+    const static std::size_t itemsize = sizeof(TValue);
+    const static std::size_t voidsize = sizeof(void*);
+    const static std::size_t voidsizem1 = voidsize - 1;
+    const static std::size_t data_t_count = (sizeof(TValue) + voidsizem1) / voidsize;
+    typedef std::array<void*, data_t_count> data_t;
+
+    data_t data{{}};
+    std::memcpy(std::addressof(data[0]), std::addressof(item), itemsize);
+    push(L, data);
+    return data_t_count;
+}
+
 namespace detail {
 template<typename T, std::size_t... I>
 inline void push(lua_State* L, indices<I...>, const T& tuplen) {
     using swallow = char[];
-    void(swallow{ '\0', (sol::stack::push(L, std::get<I>(tuplen)), '\0')... });
+    void(swallow{'\0', (sol::stack::push(L, std::get<I>(tuplen)), '\0')... });
 }
 
 template<typename F, typename... Vs>
 auto ltr_pop(lua_State*, F&& f, types<>, Vs&&... vs) -> decltype(f(std::forward<Vs>(vs)...)) {
-	return f(std::forward<Vs>(vs)...);
+    return f(std::forward<Vs>(vs)...);
 }
 template<typename F, typename Head, typename... Vs>
 auto ltr_pop(lua_State* L, F&& f, types<Head>, Vs&&... vs) -> decltype(ltr_pop(L, std::forward<F>(f), types<>(), std::forward<Vs>(vs)..., pop<Head>(L))) {
-	return ltr_pop(L, std::forward<F>(f), types<>(), std::forward<Vs>(vs)..., pop<Head>(L));
+    return ltr_pop(L, std::forward<F>(f), types<>(), std::forward<Vs>(vs)..., pop<Head>(L));
 }
 template<typename F, typename Head, typename... Tail, typename... Vs>
-auto ltr_pop(lua_State* L, F&& f, types<Head, Tail...>, Vs&&... vs) -> decltype(ltr_pop(L, std::forward<F>(f), types<Tail...>(), std::forward<Vs>(vs)..., pop<Head>(L))) {
-	return ltr_pop(L, std::forward<F>(f), types<Tail...>(), std::forward<Vs>(vs)..., pop<Head>(L));
+auto ltr_pop(lua_State* L, F&& f, types<Head, Tail...>, Vs&&... vs) -> decltype(f(std::forward<Vs>(vs)..., std::declval<Head>(), std::declval<Tail>()...)) {
+    return ltr_pop(L, std::forward<F>(f), types<Tail...>(), std::forward<Vs>(vs)..., pop<Head>(L));
 }
 } // detail
 
@@ -186,7 +239,7 @@ inline auto pop_call(lua_State* L, TFx&& fx, types<Args...>) -> decltype(detail:
 template<typename... Args>
 void push_args(lua_State* L, Args&&... args) {
     using swallow = char[];
-    void(swallow{ '\0', (stack::push(L, std::forward<Args>(args)), '\0')... });
+    void(swallow{'\0', (stack::push(L, std::forward<Args>(args)), '\0')... });
 }
 } // stack
 } // sol
