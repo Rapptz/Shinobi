@@ -22,30 +22,46 @@
 #ifndef SOL_OBJECT_HPP
 #define SOL_OBJECT_HPP
 
-#include "table.hpp"
-#include "function.hpp"
+#include "reference.hpp"
+#include "stack.hpp"
 
 namespace sol {
-class object : public table, public function {
+class object : public reference {
 public:
     object(lua_State* L, int index = -1): reference(L, index) {}
     object() = default;
 
     template<typename T>
-    T as() {
+    T as() const {
         push();
         type_assert(state(), -1, type_of<T>());
         return stack::get<T>(state());
     }
 
     template<typename T>
-    bool is() {
+    bool is() const {
         push();
         auto expected = type_of<T>();
         auto actual = lua_type(state(), -1);
         return (static_cast<int>(expected) == actual) || (expected == type::poly);
     }
 };
+
+bool operator==(const object& lhs, const nil_t&) {
+    return lhs.is<nil_t>();
+}
+
+bool operator==(const nil_t&, const object& rhs) {
+    return rhs.is<nil_t>();
+}
+
+bool operator!=(const object& lhs, const nil_t&) {
+    return !lhs.is<nil_t>();
+}
+
+bool operator!=(const nil_t&, const object& rhs) {
+    return !rhs.is<nil_t>();
+}
 } // sol
 
 #endif // SOL_OBJECT_HPP

@@ -27,7 +27,7 @@
 #include "stack.hpp"
 
 namespace sol {
-class function : virtual public reference {
+class function : public reference {
 private:
     void luacall (std::size_t argcount, std::size_t resultcount) {
         lua_call(state(), static_cast<uint32_t>(argcount), static_cast<uint32_t>(resultcount));
@@ -58,7 +58,14 @@ public:
     function(lua_State* L, int index = -1): reference(L, index) {
         type_assert(L, index, type::function);
     }
+    function(const function&) = default;
+    function& operator=(const function&) = default;
 
+    template<typename... Args>
+    void operator()(Args&&... args) {
+	    call<>(std::forward<Args>(args)...);
+    }
+    
     template<typename... Ret, typename... Args>
     auto call(Args&&... args) -> decltype(invoke(types<Ret...>(), sizeof...(Args))) {
         push();
