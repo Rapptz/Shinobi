@@ -81,7 +81,10 @@ TEST_CASE("simple/callWithParameters", "Lua function is called with a few parame
 
     REQUIRE_NOTHROW(lua.script("function my_add(i, j, k) return i + j + k end"));
     auto f = lua.get<sol::function>("my_add");
+    REQUIRE_NOTHROW(lua.script("function my_nothing(i, j, k) end"));
+    auto fvoid = lua.get<sol::function>("my_nothing");
     int a;
+    REQUIRE_NOTHROW(fvoid(1, 2, 3));
     REQUIRE_NOTHROW(a = f.call<int>(1, 2, 3));
     REQUIRE(a == 6);
     REQUIRE_THROWS(a = f.call<int>(1, 2, "arf"));
@@ -111,15 +114,16 @@ TEST_CASE("simple/callLambda", "A C++ lambda is exposed to lua and called") {
 TEST_CASE("advanced/callLambdaReturns", "Checks for lambdas returning values") {
     sol::state lua;
 
-    lua.set_function("a", [ ] { return 42; });
-    lua.set_function("b", [ ] { return 42u; });
-    lua.set_function("c", [ ] { return 3.14; });
-    lua.set_function("d", [ ] { return 6.28f; });
-    lua.set_function("e", [ ] { return "lol"; });
-    lua.set_function("f", [ ] { return true; });
-    lua.set_function("g", [ ] { return std::string("str"); });
-    lua.set_function("h", [ ] { });
-    lua.set_function("i", [ ] { return sol::nil; });
+    REQUIRE_NOTHROW(lua.set_function("a", [ ] { return 42; }));
+    REQUIRE_NOTHROW(lua.set_function("b", [ ] { return 42u; }));
+    REQUIRE_NOTHROW(lua.set_function("c", [ ] { return 3.14; }));
+    REQUIRE_NOTHROW(lua.set_function("d", [ ] { return 6.28f; }));
+    REQUIRE_NOTHROW(lua.set_function("e", [ ] { return "lol"; }));
+    REQUIRE_NOTHROW(lua.set_function("f", [ ] { return true; }));
+    REQUIRE_NOTHROW(lua.set_function("g", [ ] { return std::string("str"); }));
+    REQUIRE_NOTHROW(lua.set_function("h", [ ] { }));
+    REQUIRE_NOTHROW(lua.set_function("i", [ ] { return sol::nil; }));
+    REQUIRE_NOTHROW(lua.set_function("j", [ ] { return std::make_tuple(1, 6.28f, 3.14, std::string( "heh" )); } ));
 }
 
 TEST_CASE("advanced/callLambda2", "A C++ lambda is exposed to lua and called") {
@@ -233,4 +237,13 @@ TEST_CASE("tables/operator[]", "Check if operator[] retrieval and setting works 
     // function retrieval of a lambda
     sol::function lamb = lua["lamb"];
     REQUIRE(lamb.call<int>(220) == 440);
+
+    // test const table retrieval
+    auto assert1 = [](const sol::table& t) {
+        std::string a = t["foo"];
+        int b = t["bar"];
+        std::cout << a << ',' << b << '\n';
+    };
+
+    REQUIRE_NOTHROW(assert1(lua.global_table()));
 }

@@ -40,8 +40,8 @@ T* get_ptr(T* val) {
 }
 } // detail
 
-class table : virtual public reference {
-    template<typename T> struct proxy;
+class table : public reference {
+    template<typename Table, typename T> struct proxy;
 public:
     table() noexcept : reference() {}
     table(lua_State* L, int index = -1) : reference(L, index) {
@@ -82,8 +82,13 @@ public:
     }
 
     template<typename T>
-    proxy<T> operator[](T&& key) {
-        return proxy<T>(*this, std::forward<T>(key));
+    proxy<table&, T> operator[](T&& key) {
+        return proxy<table&, T>(*this, std::forward<T>(key));
+    }
+
+    template<typename T>
+    proxy<const table&, T> operator[](T&& key) const {
+        return proxy<const table&, T>(*this, std::forward<T>(key));
     }
 
     size_t size() const {
@@ -91,6 +96,30 @@ public:
         return lua_rawlen(state(), -1);
     }
 private:
+    template<typename Table, typename T>
+    struct proxy {
+    private:
+        Table t;
+        T& key;
+    public:
+        proxy(Table t, T& key) : t(t), key(key) {}
+
+        template<typename U>
+        EnableIf<Function<Unqualified<U>>> operator=(U&& other) {
+            t.set_function(key, std::forward<U>(other));
+        }
+    
+        template<typename U>
+        DisableIf<Function<Unqualified<U>>> operator=(U&& other) {
+            t.set(key, std::forward<U>(other));
+        }
+
+        template<typename U>
+        operator U() const {
+            return t.get<U>(key);
+        }
+    };
+
     template<typename T, typename TFx>
     table& set_isfunction_fx(std::true_type, T&& key, TFx&& fx) {
         return set_fx(std::false_type(), std::forward<T>(key), std::forward<TFx>(fx));
@@ -99,7 +128,7 @@ private:
     template<typename T, typename TFx>
     table& set_isfunction_fx(std::false_type, T&& key, TFx&& fx) {
         typedef Decay<TFx> clean_lambda;
-        typedef typename detail::function_traits<decltype(&clean_lambda::operator())>::free_function_pointer_type raw_func_t;
+        typedef typename function_traits<decltype(&clean_lambda::operator())>::free_function_pointer_type raw_func_t;
         typedef std::is_convertible<clean_lambda, raw_func_t> isconvertible;
         return set_isconvertible_fx(isconvertible(), std::forward<T>(key), std::forward<TFx>(fx));
     }
@@ -107,7 +136,7 @@ private:
     template<typename T, typename TFx>
     table& set_isconvertible_fx(std::true_type, T&& key, TFx&& fx) {
         typedef Decay<TFx> clean_lambda;
-        typedef typename detail::function_traits<decltype(&clean_lambda::operator())>::free_function_pointer_type raw_func_t;
+        typedef typename function_traits<decltype(&clean_lambda::operator())>::free_function_pointer_type raw_func_t;
         return set_isfunction_fx(std::true_type(), std::forward<T>(key), raw_func_t(std::forward<TFx>(fx)));
     }
 
@@ -207,30 +236,6 @@ private:
         lua_pop(state(), 1);
         return *this;
     }
-
-    template<typename T>
-    struct proxy {
-    private:
-        table& t;
-        T& key;
-    public:
-        proxy(table& t, T& key): t(t), key(key) {}
-
-        template<typename U>
-        DisableIf<Function<Unqualified<U>>> operator=(U&& other) {
-            t.set(key, std::forward<U>(other));
-        }
-
-        template<typename U>
-        EnableIf<Function<Unqualified<U>>> operator=(U&& other) {
-            t.set_function(key, std::forward<U>(other));
-        }
-
-        template<typename U>
-        operator U() const {
-            return t.get<U>(key);
-        }
-    };
 };
 } // sol
 

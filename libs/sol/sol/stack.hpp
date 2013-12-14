@@ -45,7 +45,7 @@ inline T get_unsigned(lua_State* L, std::false_type, int index = -1) {
 template<typename T>
 inline T get_arithmetic(lua_State* L, std::false_type, int index = -1) {
     // T is a floating point
-    return lua_tonumber(L, index);
+    return static_cast<T>(lua_tonumber(L, index));
 }
 
 template<typename T>
@@ -208,8 +208,8 @@ inline int push_user(lua_State* L, T& item) {
 namespace detail {
 template<typename T, std::size_t... I>
 inline void push(lua_State* L, indices<I...>, const T& tuplen) {
-    using swallow = char[];
-    void(swallow{'\0', (sol::stack::push(L, std::get<I>(tuplen)), '\0')... });
+    using swallow = char[ 1 + sizeof...(I) ];
+    swallow {'\0', (sol::stack::push(L, std::get<I>(tuplen)), '\0')... };
 }
 
 template<typename F, typename... Vs>
