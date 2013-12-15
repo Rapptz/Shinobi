@@ -1,5 +1,6 @@
 #include <sol/sol.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/regex.hpp>
 #include <sstream>
 #include "shinobi.hpp"
 #include "errors.hpp"
@@ -79,6 +80,61 @@ std::string sanitise(const fs::path& p) noexcept {
     return result;
 }
 
+struct glob_predicate {
+private:
+    boost::regex filter;
+
+    boost::regex glob_to_regex(const std::string& glob) {
+        std::ostringstream ss("^"); // start match
+        bool literal = false;
+
+        for(auto&& i : glob) {
+            bool escape = false;
+            switch(i) {
+            // escape character
+            case '\\':
+                if(literal) {
+                    ss << '\\' << '\\';
+                }
+                escape = !literal;
+                break;
+            // 0 or more
+            case '*':
+                ss << (literal ? "\\*" : ".*");
+                break;
+            // 1 only
+            case '?':
+                ss << (literal ? "\\?" : ".");
+                break;
+            // dot
+            case '.':
+                ss << "\\.";
+                break;
+            // escape /
+            case '/':
+                ss << "\\/";
+                break;
+            default:
+                ss << i;
+                break;
+            };
+
+            literal = escape;
+        }
+
+        ss << "$"; // end match
+
+        return boost::regex(ss.str());
+    }
+public:
+    glob_predicate() = default;
+    glob_predicate(const std::string& glob): filter(glob_to_regex(glob)) {}
+
+    bool operator()(const std::string& str) const {
+        return boost::regex_match(str, filter);
+    }
+};
+
 std::string table_to_string(const sol::table& t, const std::string& prefix = "") {
     std::ostringstream ss;
     const auto size = t.size();
@@ -111,6 +167,57 @@ std::string flatten_list(const Cont& c) {
     return ss.str();
 }
 
+namespace os {
+void mkdir(std::string dir) {
+    try {
+        fs::path p(dir);
+        if(!fs::exists(p) && fs::is_directory(p)) {
+            fs::create_directory(p);
+        }
+    }
+    catch(const std::exception& e) {
+        throw shinobi_error("failed to make directory \"" + dir + '"');
+    }
+}
+
+void mkdirs(std::string dir) {
+    try {
+        fs::path p(dir);
+        if(!fs::exists(p) && fs::is_directory(p)) {
+            fs::create_directories(p);
+        }
+    }
+    catch(const std::exception& e) {
+        throw shinobi_error("failed to make any or all directories under \"" + dir + '"');
+    }
+}
+
+void rmdir(std::string dir) {
+    try {
+        fs::path p(dir);
+        if(fs::exists(p) && fs::is_directory(p)) {
+            fs::remove(p);
+        }
+    }
+    catch(const std::exception& e) {
+        throw shinobi_error("failed to remove directory \"" + dir + "\" (maybe it's not empty?)");
+    }
+}
+
+void rmdirs(std::string dir) {
+    try {
+        fs::path p(dir);
+        if(fs::exists(p) && fs::is_directory(p)) {
+            fs::remove_all(p);
+        }
+    }
+    catch(const std::exception& e) {
+        throw shinobi_error("failed to remove directory " + dir);
+    }
+}
+} // os
+
+
 shinobi::shinobi(std::ostream& out, const std::string& compiler_name): lua(new sol::state), file(out) {
     lua->open_libraries(sol::lib::base, sol::lib::string, sol::lib::table, sol::lib::os);
     // inject defaults.
@@ -131,19 +238,66 @@ end
 )delim");
     lua->get<sol::table>("compiler").set("name", compiler_name);
     fill_config_table();
-
-    #if SHINOBI_WINDOWS
-    lua->get<sol::table>("os").set("name", "windows");
-    #elif SHINOBI_LINUX
-    lua->get<sol::table>("os").set("name", "linux")
-    #elif SHINOBI_MACOS
-    lua->get<sol::table>("os").set("name", "osx");
-    #else
-    lua->get<sol::table>("os").set("name", "unknown");
-    #endif
+    register_functions();
 }
 
 shinobi::~shinobi() = default;
+
+bool is_hidden_directory(const fs::path& p) {
+    auto name = p.filename().string();
+    return name != ".." && name != "." && name.front() == '.';
+}
+
+void shinobi::register_functions() {
+    // extend OS functionality
+    auto os = lua->get<sol::table>("os");
+    os.set_function("mkdir", os::mkdir);
+    os.set_function("mkdirs", os::mkdirs);
+    os.set_function("rmdir", os::rmdir);
+    os.set_function("rmdirs", os::rmdirs);
+    os.set_function("glob", [this](std::string pattern) {
+        auto t = lua->create_table();
+        int index = 1;
+        glob_predicate pred(pattern);
+        try {
+            for(fs::recursive_directory_iterator f("."), l; f != l; ++f) {
+                auto p = f->path();
+                // check if it's a hidden directory
+                if(fs::is_directory(p) && is_hidden_directory(p)) {
+                    f.no_push();
+                    continue;
+                }
+
+                if(fs::is_regular_file(p)) {
+                    auto file = sanitise(p);
+                    if(pred(file)) {
+                        t.set(index++, file);
+                    }
+                }
+            }
+
+            return t;
+        }
+        catch(const std::exception& e) {
+            throw shinobi_error("unable to glob with " + pattern);
+        }
+    });
+
+    #if SHINOBI_WINDOWS
+    os.set("name", "windows");
+    #elif SHINOBI_LINUX
+    os.set("name", "linux")
+    #elif SHINOBI_MACOS
+    os.set("name", "osx");
+    #else
+    os.set("name", "unknown");
+    #endif
+
+    // extend string functionality
+    lua->script("function string.endswith(str, ext)\n"
+                "    return string.find(str, ext, -(#ext), true) ~= nil\n"
+                "end\n");
+}
 
 void shinobi::fill_config_table() {
     std::string table("config = constant {\n    release = ");
@@ -285,36 +439,15 @@ void shinobi::release(bool b) {
     config.debug = !b;
 }
 
-bool is_hidden_directory(const fs::path& p) {
-    auto name = p.filename().string();
-    return name != ".." && name != "." && name.front() == '.';
-}
-
-void shinobi::recurse_through_directory(const std::string& dir) {
-    // loop through every file in the directory
-    for(fs::recursive_directory_iterator first(dir), last; first != last; ++first) {
-        auto p = first->path();
-        // ignore hidden directories
-        // TODO: work on ignored directories (e.g. directory.ignored = "...")
-        if(fs::is_directory(p) && is_hidden_directory(p)) {
-            first.no_push();
-            continue;
-        }
-
-        // valid file
-        if(fs::is_regular_file(p) && extension_is(p.string(), ".cpp", ".cxx", ".cc", ".c", ".c++")) {
-            input.insert(sanitise(p));
-        }
-    }
-}
-
 void shinobi::fill_input(const sol::table& t) {
-    auto o = t.get<sol::object>("source");
-    if(o.is<sol::nil_t>()) {
-        throw shinobi_fatal_error("no source input directory provided. (did you forget to set directory.source?)");
+    auto o = t.get<sol::object>("files");
+    if(!o.is<sol::table>()) {
+        throw shinobi_fatal_error("input files missing (did you forget to set the files table?)");
     }
-    else if(o.is<std::string>()) {
-        recurse_through_directory(o.as<std::string>());
+
+    auto files = o.as<sol::table>();
+    for(size_t i = 1; i <= files.size(); ++i) {
+        input.insert(files.get<std::string>(i));
     }
 }
 
@@ -322,20 +455,17 @@ std::string shinobi::directory() {
     auto dir = lua->get<sol::table>("directory");
     auto build = dir.get<sol::object>("build");
     auto object = dir.get<sol::object>("object");
-    fs::path bin = build.is<std::string>() ? build.as<std::string>() : "bin";
+    std::string bin = build.is<std::string>() ? build.as<std::string>() : "bin";
     std::string obj = object.is<std::string>() ? object.as<std::string>() : "obj";
-    file.variable("builddir", bin.string());
+    file.variable("builddir", bin);
     file.variable("objdir", obj);
-
-    if(!fs::exists(bin)) {
-        fs::create_directories(bin);
-    }
+    os::mkdirs(bin);
     return obj;
 }
 
 void shinobi::create_executable() {
     auto obj = directory();
-    fill_input(lua->get<sol::table>("directory"));
+    fill_input(lua->global_table());
     const bool is_gcc_like = compiler_linker_tree();
     build_sequence(obj, is_gcc_like);
     file.newline();

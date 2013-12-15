@@ -7,7 +7,7 @@ cxx = g++
 cxxflags = -std=c++11 -pedantic -pedantic-errors -Wextra -Wall -O2 -DNDEBUG
 incflags = -I"." -I"libs"
 linkflags = -static
-libs = -lboost_system -lboost_filesystem -llua
+libs = -lboost_system -lboost_filesystem -lboost_regex -llua
 
 rule compile
     command = $cxx -MMD -MF $out.d $cxxflags -c $in -o $out $incflags

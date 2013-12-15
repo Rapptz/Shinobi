@@ -24,10 +24,10 @@ private:
         bool debug;
     } config;
     void fill_config_table();
+    void register_functions();
     void fill_input(const sol::table& t);
     void build_sequence(const std::string& dir, const bool is_gcc_like);
     void create_executable();
-    void recurse_through_directory(const std::string& dir);
     bool compiler_linker_tree();
     std::string directory();
 public:
