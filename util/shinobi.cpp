@@ -293,10 +293,38 @@ void shinobi::register_functions() {
     os.set("name", "unknown");
     #endif
 
-    // extend string functionality
-    lua->script("function string.endswith(str, ext)\n"
-                "    return string.find(str, ext, -(#ext), true) ~= nil\n"
-                "end\n");
+    // extend table functionality
+    lua->script(R"script(
+function table.find(t, val)
+    local i = 1
+    for k, v in pairs(t) do
+        if v == val then
+            return i, k
+        else
+           i = i + 1
+        end
+    end
+    return nil
+end
+function table.erase(t, val)
+    local i, k = table.find(t, val)
+    if i ~= nil then rawset(t, i, nil) end
+end
+function table.filter(t, func)
+    local result = {}
+    for _, v in pairs(t) do
+        if func(v) then table.insert(result, v) end
+    end
+    return result
+end
+function table.map(t, func)
+    local result = {}
+    for k, v in pairs(t) do
+        table.insert(result, func(v))
+    end
+    return result
+end
+)script");
 }
 
 void shinobi::fill_config_table() {
