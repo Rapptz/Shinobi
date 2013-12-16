@@ -16,25 +16,39 @@ void create_default_file(const std::string& filename) {
 project.name = "untitled";
 
 -- compiler and linker settings
+-- with release and debug configuration
 if compiler.name == "g++" or compiler.name == "clang++" then
     compiler.flags = { "-std=c++11", "-pedantic", "-pedantic-errors", "-Wextra", "-Wall", "-O2" };
     linker.flags = { "-static" };
-end
 
--- release and debug configuration
-if config.release then
-    table.insert(compiler.flags, "-DNDEBUG");
-else
-    table.insert(compiler.flags, "-g");
+    if config.release then 
+        table.insert(compiler.flags, "-DNDEBUG");
+    else
+        table.insert(compiler.flags, "-g");
+    end
+elseif compiler.name == "msvc" then
+    compiler.flags = { "/Za", "/EHsc", "/W3", "/Gm" };
+
+    if config.release then
+        table.insert(compiler.flags, "/DNDEBUG");
+        table.insert(compiler.flags, "/O2");
+    else
+        table.insert(compiler.flags, "/Od");
+        table.insert(compiler.flags, "/ZI");
+        linker.flags = { "/DEBUG" }
+    end
 end
 
 -- include paths
 compiler.paths = { ".", "libs" };
 
 -- directory information
-directory.source = ".";
 directory.build = "bin";
-directory.object = "obj";)delim";
+directory.object = "obj";
+
+-- files to compile
+files = os.glob("*.cpp");
+)delim";
 }
 
 bool ends_with(const std::string& in, const std::string& other) {
