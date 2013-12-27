@@ -232,7 +232,7 @@ void rmdirs(std::string dir) {
 } // os
 
 
-shinobi::shinobi(std::ostream& out, const std::string& compiler_name): lua(new sol::state), file(out) {
+shinobi::shinobi(std::ostream& out, const std::string& compiler_name, bool release): lua(new sol::state), file(out) {
     lua->open_libraries(sol::lib::base, sol::lib::string, sol::lib::table, sol::lib::os);
     // inject defaults.
     lua->script(R"delim(project = {}
@@ -251,7 +251,7 @@ function constant(table)
 end
 )delim");
     lua->get<sol::table>("compiler").set("name", compiler_name);
-    fill_config_table();
+    fill_config_table(release);
     register_functions();
 }
 
@@ -341,11 +341,11 @@ end
 )script");
 }
 
-void shinobi::fill_config_table() {
+void shinobi::fill_config_table(bool release) {
     std::string table("config = constant {\n    release = ");
-    table += (config.release ? "true" : "false");
-    table += ",\n    ";
-    table += (config.debug ? "true" : "false");
+    table += (release ? "true" : "false");
+    table += ",\n    debug = ";
+    table += (!release ? "true" : "false");
     table += "\n}\n";
     lua->script(table);
 }
@@ -474,11 +474,6 @@ void shinobi::build_sequence(const std::string& dir, const bool is_gcc_like) {
         output.insert(output_file);
         file.build(output_file, p, "compile");
     }
-}
-
-void shinobi::release(bool b) {
-    config.release = b;
-    config.debug = !b;
 }
 
 void shinobi::fill_input(const sol::table& t) {

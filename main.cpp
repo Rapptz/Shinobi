@@ -20,6 +20,7 @@ int main(int argc, char* argv[]) {
                                     'o', false, "build.ninja"));
     po.add(cli::option<std::string>("file", "specify input file (default: shinobi.lua)", 'f', false, "shinobi.lua"));
     po.add(cli::flag("debug", "create debug configuration ninja file"));
+    po.add(cli::flag("release", "create release configuration ninja file (default)"));
     po.program_name("shinobi");
     po.usage("[options] ...");
 
@@ -37,8 +38,8 @@ int main(int argc, char* argv[]) {
             return 0;
         }
 
-        util::shinobi result(ss, po.get<std::string>("compiler"));
-        result.release(!po.is_active("debug"));
+        bool release = po.is_active("release") || !po.is_active("debug");
+        util::shinobi result(ss, po.get<std::string>("compiler"), release);
         result.open_file(po.get<std::string>("file"));
         result.create();
 

@@ -19,11 +19,7 @@ private:
     std::set<std::string> output;
     std::unique_ptr<sol::state> lua;
     ninja file;
-    struct {
-        bool release;
-        bool debug;
-    } config;
-    void fill_config_table();
+    void fill_config_table(bool release);
     void register_functions();
     void fill_input(const sol::table& t);
     void build_sequence(const std::string& dir, const bool is_gcc_like);
@@ -31,10 +27,9 @@ private:
     bool compiler_linker_tree();
     std::string directory();
 public:
-    shinobi(std::ostream& out, const std::string& compiler_name);
+    shinobi(std::ostream& out, const std::string& compiler_name, bool release);
     ~shinobi();
     void open_file(const std::string& filename);
-    void release(bool b);
     void create();
 };
 } // util
