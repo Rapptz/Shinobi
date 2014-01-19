@@ -8,6 +8,9 @@ class compiler {
 protected:
     std::string compiler_name;
 public:
+    compiler() = default;
+    compiler(std::string s): compiler_name(std::move(s)) {}
+
     std::string name() const noexcept {
         return compiler_name;
     }
