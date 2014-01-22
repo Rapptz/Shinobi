@@ -2,11 +2,28 @@
 #define COMPILER_HPP
 
 #include <string>
+#include <sstream>
 #include <sol/object.hpp>
+#include <sol/table.hpp>
 
 class compiler {
 protected:
     std::string compiler_name;
+    std::ostringstream ss;
+
+    void to_string(const sol::table& t, std::string prefix = "", std::string postfix = "") {
+        ss.str("");
+        const auto size = t.size();
+        unsigned index = 1;
+
+        if(size != 1) {
+            ss << prefix << t.get<std::string>(index++) << postfix;
+        }
+
+        for(; index <= size; ++index) {
+            ss << ' ' << prefix << t.get<std::string>(index) << postfix;
+        }
+    }
 public:
     compiler() = default;
     compiler(std::string s): compiler_name(std::move(s)) {}
@@ -15,13 +32,13 @@ public:
         return compiler_name;
     }
 
-    virtual std::string initial() const = 0;
-    virtual std::string include_path(const sol::object&) const = 0;
-    virtual std::string compiler_flags(const sol::object&) const = 0;
-    virtual std::string output() const = 0;
-    virtual std::string library_path(const sol::object&) const = 0;
-    virtual std::string linker_flags(const sol::object&) const = 0;
-    virtual std::string libraries(const sol::object&) const = 0;
+    virtual std::string initial() = 0;
+    virtual std::string include_path(const sol::object&) = 0;
+    virtual std::string compiler_flags(const sol::object&) = 0;
+    virtual std::string output() = 0;
+    virtual std::string library_path(const sol::object&) = 0;
+    virtual std::string linker_flags(const sol::object&) = 0;
+    virtual std::string libraries(const sol::object&) = 0;
 };
 
 #endif // COMPILER_HPP
