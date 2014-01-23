@@ -34,11 +34,38 @@ public:
 
     virtual std::string initial() = 0;
     virtual std::string include_path(const sol::object&) = 0;
-    virtual std::string compiler_flags(const sol::object&) = 0;
     virtual std::string output() = 0;
     virtual std::string library_path(const sol::object&) = 0;
-    virtual std::string linker_flags(const sol::object&) = 0;
-    virtual std::string libraries(const sol::object&) = 0;
+
+    virtual std::string compiler_flags(const sol::object& obj) {
+        if(obj.is<sol::table>()) {
+            const auto& t = obj.as<sol::table>();
+            to_string(t);
+            return ss.str();
+        }
+
+        return "";
+    }
+
+    virtual std::string linker_flags(const sol::object& obj) {
+        if(obj.is<sol::table>()) {
+            const auto& t = obj.as<sol::table>();
+            to_string(t);
+            return ss.str();
+        }
+
+        return "";
+    }
+
+    virtual std::string libraries(const sol::object& obj) {
+        if(obj.is<sol::table>()) {
+            const auto& t = obj.as<sol::table>();
+            to_string(t);
+            return ss.str();
+        }
+
+        return "";
+    }
 };
 
 #endif // COMPILER_HPP
